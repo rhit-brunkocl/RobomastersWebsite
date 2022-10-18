@@ -1,0 +1,17 @@
+body {
+    background: #DDDDDD;
+}
+
+.navbar {
+    background-color: #800000;
+    color: white;
+}
+
+.page-container {
+    margin-top: 75px;
+}
+
+.btn.btn-outline-primary.btn-block{
+    background-color: #800000;
+    color: white;
+ }
