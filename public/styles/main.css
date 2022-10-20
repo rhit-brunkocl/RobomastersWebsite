@@ -15,3 +15,15 @@ body {
     background-color: #800000;
     color: white;
  }
+
+#fileIcon {
+    font-size: 100px;
+}
+
+#backButton {
+    background-color: white;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px 80px;
+}
