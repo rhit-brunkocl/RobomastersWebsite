@@ -55,11 +55,10 @@
   </nav>
 
   <div id="mainPage" class="container page-container">
-    <div id="pageGrid" class="row no-gutters justify-content-md-center">
+    <div id="pageGrid" class="row justify-content-md-center">
     <div class = "col-4">
         <div class = "container" style = "text-align: center;">
             <div class="form-group">
-            <label for="entryName">Name</label>
              <input type="name" class="form-control" id="entryName" aria-describedby="emailHelp" placeholder="Entry Name">
              </div>
         </div>
@@ -99,17 +98,24 @@
     </div>
     </div>
     <div class="col-4">
-        <div class="form-check">
-            <input class="form-check-input" type="date" value="" id="flexCheckDefault">
-        </div>
+            <p>Current Tags:</p>
+            <p>Example Tag</p>
     </div>
     <div class="col-8">
         <div class="input-group">
-            <textarea class="form-control" aria-label="With textarea"></textarea>
+            <textarea id = "entryContent" class="form-control" aria-label="With textarea" placeholder="Entry Content"></textarea>
           </div>
     </div>
     <div class="col-4">
         <div class="row">
+            <div class="col-12">
+                <div class="input-group">
+                    <input type="date" class="form-control" aria-label="With textarea"></textarea>
+                  </div>
+            </div>
+            <div class="col-12">
+                <p></p>
+            </div>
             <div class="col-12">
                 <div class="mb-3">
                     <input class="form-control" type="file" id="formFile">
@@ -119,6 +125,9 @@
                 <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
                     <p>Drag one or more files to this <i>drop zone</i>.</p>
                 </div>
+            </div>
+            <div class="col-12">
+                <p></p>
             </div>
             <div class="col-12">
                 <div class="mb-3">
