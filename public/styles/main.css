@@ -27,3 +27,9 @@ body {
     left: 20px;
     padding: 10px 80px;
 }
+
+#drop_zone {
+    border: 5px solid blue;
+    width: 200px;
+    height: 100px;
+  }
