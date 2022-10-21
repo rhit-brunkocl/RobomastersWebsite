@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="styles/main.css">
+  <title>RHIT Robomasters</title>
+</head>
+
+<!--Navbar-->
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">
+        <img src="images\robomastersLogo1.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+        RHIT Robomasters
+      </a>
+    </div>
+  </nav>
+
+  <div id="mainPage" class="container page-container">
+    <h3>Change Information</h3>
+    <label for="changeName">Name</label>
+    <input type="text" class="form-control" id="changeName">
+    <label for="changeUsername">Username</label>
+    <input type="text" class="form-control" id="changeUsername">
+    <div class="row">
+        <div class="col">
+            <div class="col">
+                <div class="dropdown" id="majorDropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="majorDropBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Major
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="majorDropBtn">
+                    <button class="dropdown-item" type="button">Biology</button>
+                    <button class="dropdown-item" type="button">Biomathematics</button>
+                    <button class="dropdown-item" type="button">Chemical Engineering</button>
+                    <button class="dropdown-item" type="button">Chemistry</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <h5 id="majorText">Chosen Major: Biology</h5>
+            </div>
+        </div>
+        <div class="col">
+            <div class="col">
+                <div class="dropdown" id="yearDropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="yearDropBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Year
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="yearDropBtn">
+                    <button class="dropdown-item" type="button">1st</button>
+                    <button class="dropdown-item" type="button">2nd</button>
+                    <button class="dropdown-item" type="button">3rd</button>
+                    <button class="dropdown-item" type="button">4th</button>
+                    <button class="dropdown-item" type="button">5th +</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <h5 id="yearText">Chosen Year: 1st</h5>
+            </div>
+        </div>
+    </div>
+    <span id="subteamLabel">Subteams</span>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="softwareCheck">
+        <label class="form-check-label" for="softwareCheck">
+          Software
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="hardwareCheck" checked>
+        <label class="form-check-label" for="hardwareCheck">
+          Hardware
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="mechanicalCheck">
+        <label class="form-check-label" for="mechanicalCheck">
+          Mechanical
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="outreachCheck" checked>
+        <label class="form-check-label" for="outreachCheck">
+          Outreach
+        </label>
+      </div>
+    <button type="button" class="btn profile-btn">Confirm Information</button>
+
+
+    <br><br>
+
+    <h3>Change Password</h3>
+    <label for="changePasswordOld">Old Password</label>
+    <input type="password" class="form-control" id="changePasswordOld">
+    <label for="changePasswordNew">New Password</label>
+    <input type="password" class="form-control" id="changePasswordNew">
+    <label for="changePasswordConf">New Password Confirmation</label>
+    <input type="password" class="form-control" id="changePasswordConf">
+    <button type="button" class="btn profile-btn">Confirm New Password</button>
+  </div>
+
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/popper.js"></script>
+  <script src="scripts/bootstrap-material-design.js"></script>
+  <script>$("body").bootstrapMaterialDesign();</script>
+  <script src="scripts/main.js"></script>
+</body>
+
+</html>

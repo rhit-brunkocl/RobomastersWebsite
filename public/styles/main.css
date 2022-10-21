@@ -45,6 +45,24 @@ body {
   padding: 10px;
 }
 
+.profile-btn {
+  background-color: #800000;
+  color:white;
+  margin: 10px;
+}
+
+#majorDropdown, #yearDropdown, #majorText, #yearText {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+#majorDropBtn, #yearDropBtn {
+  color:black;
+  background-color: #a0000066;
+  font-size: medium;
+}
+
 #listDiv {
   background-color: white;
   height: 400px;
@@ -81,6 +99,11 @@ body {
     border: 1px solid darkgrey;
     padding: 10px;
     height: 500px;
+  }
+
+  #subteamLabel {
+    margin-top: 10px;
+    font-size: 20px;
   }
 
   .container{
