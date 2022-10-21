@@ -20,16 +20,46 @@ body {
     margin-left: 10px;
 }
 
+.bottom-btn {
+  background-color: white;
+  padding: 10px 80px;
+}
+
+.button-col {
+  text-align: center;
+}
+
+.option-container {
+  display:flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.option-text {
+  flex-grow:1;
+  border: black; 
+  border-width: 2px;
+  border-style: solid;
+  text-align: center;
+  font-size: 20px;
+  padding: 10px;
+}
+
+#listDiv {
+  background-color: white;
+  height: 400px;
+  margin: 20px 5px;
+  overflow: scroll; 
+}
+
 #fileIcon {
     font-size: 100px;
 }
 
 #backButton {
-    background-color: white;
     position: fixed;
     bottom: 20px;
     left: 20px;
-    padding: 10px 80px;
 }
 
 #drop_zone {
