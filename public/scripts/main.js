@@ -27,10 +27,29 @@ rhit.ClassName = class {
 	}
 }
 
+rhit.NotebookEntryView = class {
+	constructor() {
+		document.querySelector("#backButton").onclick = (event) => {
+			console.log("going back to list");
+			window.location.href = "entry-list.html";
+		}
+	}
+
+	methodName() {
+
+	}
+}
+
 /* Main */
 /** function and class syntax examples */
 rhit.main = function () {
 	console.log("Ready");
+
+	if (document.querySelector("#viewEntryPage"))
+	{
+		console.log("On view entry page");
+		const notebookEntryView = new rhit.NotebookEntryView();
+	}
 };
 
 rhit.main();
