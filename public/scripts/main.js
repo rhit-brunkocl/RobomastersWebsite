@@ -10,6 +10,11 @@ rhit.fbEntriesManager = null;
 rhit.fbSingleEntryManager = null;
 rhit.fbAuthManager = null;
 
+rhit.formatDate = function(d) {
+	const month = d.getMonth() + 1;
+	return `${month}/${d.getDate()}/${d.getFullYear()}`
+}
+
 rhit.Entry = class {
 	constructor(id, title, content, date, tags, filename) {
 		this.id = id;
@@ -131,6 +136,7 @@ rhit.FbSingleQuoteManager = class {
 }
 
 
+
 rhit.NotebookEntryView = class {
 	constructor() {
 		document.querySelector("#backButton").onclick = (event) => {
@@ -152,7 +158,7 @@ rhit.EntryListView = class {
 	
 }
 
-rhit.EntryListController() = class {
+rhit.EntryListController = class {
 	constructor() {
 		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
 	}
@@ -181,13 +187,15 @@ rhit.EntryListController() = class {
 	}
 
 	_createRow(en) {
+
+		
 		return htmlToElement(
 			`<div class="option-container">
 			<div class="title-text option-text text-align">
 				${en[rhit.FB_KEY_TITLE]}
 			</div>
 			<div class="option-text">
-				${en[rhit.FB_KEY_DATE]}
+				${rhit.formatDate(en[rhit.FB_KEY_DATE].toDate())}
 			</div>
 			<div class="option-text">
 				${en[rhit.FB_KEY_TAGS]}
@@ -218,7 +226,7 @@ rhit.main = function () {
 	{
 		console.log("On entry list page")
 		rhit.fbEntriesManager = new rhit.FbEntriesManager();
-		new rhit.EntryListView();
+		new rhit.EntryListController();
 	}
 };
 
