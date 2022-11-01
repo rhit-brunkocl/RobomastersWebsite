@@ -144,6 +144,33 @@ rhit.NotebookEntryView = class {
 	}
 }
 
+rhit.addEntryPageController = class {
+	constructor(){
+		//for add
+		document.querySelector("#submitButton").addEventListener("click", (event) => {
+			const title = document.querySelector("#entryName").value;
+			const content = document.querySelector("#entryContent").value;
+			const date = document.querySelector("#datePicker").value;
+			const tags = "Software";
+			const filename = document.querySelector("#formFile").value;
+			rhit.fbEntriesManager.add(title, content, date, tags, filename);
+		});
+	}
+
+	constructor(entryID){
+		//for edit
+		
+		document.querySelector("#submitButton").addEventListener("click", (event) => {
+			const title = document.querySelector("#entryName").value;
+			const content = document.querySelector("#entryContent").value;
+			const date = document.querySelector("#datePicker").value;
+			const tags = "Software";
+			const filename = document.querySelector("#formFile").value;
+			rhit.fbEntriesManager.add(title, content, date, tags, filename);
+		});
+	}
+}
+
 /* Main */
 /** function and class syntax examples */
 rhit.main = function () {
