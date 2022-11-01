@@ -5,7 +5,9 @@ rhit.FB_KEY_TITLE = "title";
 rhit.FB_KEY_CONTENT = "content";
 rhit.FB_KEY_DATE = "date";
 rhit.FB_KEY_TAGS = "tags";
-rhit.FB_KEY_FILENAME = "filename"
+rhit.FB_KEY_FILENAME = "filename";
+rhit.FB_COLLECTION_TAGS = "Tags";
+rhit.FB_TAGS_NAME = "name";
 rhit.fbEntriesManager = null;
 rhit.fbSingleEntryManager = null;
 rhit.fbAuthManager = null;
@@ -159,7 +161,7 @@ rhit.addEntryPageController = class {
 
 	constructor(entryID){
 		//for edit
-		
+
 		document.querySelector("#submitButton").addEventListener("click", (event) => {
 			const title = document.querySelector("#entryName").value;
 			const content = document.querySelector("#entryContent").value;
