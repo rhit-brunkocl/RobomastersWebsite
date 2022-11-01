@@ -150,14 +150,6 @@ rhit.NotebookEntryView = class {
 	}
 }
 
-rhit.EntryListView = class {
-	constructor() {
-		
-	}
-
-	
-}
-
 rhit.EntryListController = class {
 	constructor() {
 		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
