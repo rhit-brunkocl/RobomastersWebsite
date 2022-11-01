@@ -144,6 +144,66 @@ rhit.NotebookEntryView = class {
 	}
 }
 
+rhit.EntryListView = class {
+	constructor() {
+		
+	}
+
+	
+}
+
+rhit.EntryListController() = class {
+	constructor() {
+		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
+	}
+
+	updateList() {
+		const newList = htmlToElement('<div id="listDiv"></div>');
+
+		for (let i = 0; i < rhit.fbEntriesManager.length; i++)
+		{
+			const en = rhit.fbEntriesManager.getEntryAtIndex(i);
+			const newRow = this._createRow(en);
+			newList.appendChild(newRow);
+
+			newRow.querySelector(".title-text").onclick = (event) => {
+				//rhit.storage.setMovieQuoteId(mq.id);
+
+				window.location.href = `/notebook-entry.html?id=${en.id}`;
+			};
+		}
+
+		const oldList = document.querySelector("#listDiv");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+
+		oldList.parentElement.appendChild(newList);
+	}
+
+	_createRow(en) {
+		return htmlToElement(
+			`<div class="option-container">
+			<div class="title-text option-text text-align">
+				${en[rhit.FB_KEY_TITLE]}
+			</div>
+			<div class="option-text">
+				${en[rhit.FB_KEY_DATE]}
+			</div>
+			<div class="option-text">
+				${en[rhit.FB_KEY_TAGS]}
+			</div>
+		</div>`
+		);
+	}
+}
+
+function htmlToElement(html) {
+	var template = document.createElement('template');
+	html = html.trim(); // Never return a text node of whitespace as the result
+	template.innerHTML = html;
+	return template.content.firstChild;
+}
+
 /* Main */
 /** function and class syntax examples */
 rhit.main = function () {
@@ -152,7 +212,13 @@ rhit.main = function () {
 	if (document.querySelector("#viewEntryPage"))
 	{
 		console.log("On view entry page");
-		const notebookEntryView = new rhit.NotebookEntryView();
+		new rhit.NotebookEntryView();
+	}
+	if (document.querySelector("#entryListPage"))
+	{
+		console.log("On entry list page")
+		rhit.fbEntriesManager = new rhit.FbEntriesManager();
+		new rhit.EntryListView();
 	}
 };
 
