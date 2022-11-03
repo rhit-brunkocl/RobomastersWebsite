@@ -69,30 +69,12 @@
             <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
              Tags
             </button>
-            <ul class="dropdown-menu">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                    <label class="form-check-label" for="flexCheckDefault">
-                         Software
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                    <label class="form-check-label" for="flexCheckDefault">
-                     Mechanical
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                    <label class="form-check-label" for="flexCheckDefault">
-                    Hardware
-                    </label>
-                </div>
+            <ul class="dropdown-menu" id = "tagContainer">
             </ul>
         </div>
     </div>
     <div class = "col-12">
-        <button type = "button" class = "btn btn-outline-primary btn-block">Create Tag</button>
+        <button type = "button" class = "btn btn-outline-primary btn-block" data-toggle = "modal" data-target = "#createTagDialog">Create Tag</button>
     </div>
     </div>
     </div>
@@ -134,6 +116,26 @@
                   </div>
             </div>
         </div>
+
+    </div>
+    <div class="modal fade" id="CreateTagDialog" tabindex="-1" role="dialog" aria-labelledby="Add tag dialog"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create Tag</h5>
+        </div>
+        <div class="modal-body">
+          <div class="form-group bmd-form-group">
+            <label for="inputTag" class="bmd-label-floating">Tag</label>
+            <input type="text" class="form-control" id="inputTag">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">CANCEL</button>
+          <button id="submitCreateTag" type="button" class="btn btn-primary" data-dismiss="modal">CREATE</button>
+        </div>
+      </div>
     </div>
 
   </div>
