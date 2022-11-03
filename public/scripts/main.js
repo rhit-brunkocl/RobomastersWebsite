@@ -189,6 +189,13 @@ rhit.EntryListController = class {
 			}
 		};
 
+		document.querySelector("#deleteEntry").onclick = (event) => {
+			if (this.selectedRowEntry) {
+				rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(this.selectedRowEntry.id);
+				rhit.fbSingleEntryManager.delete();
+			}
+		};
+
 	}
 
 	updateList() {
