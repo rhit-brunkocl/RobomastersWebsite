@@ -58,22 +58,20 @@
   <div id="viewEntryPage" class="container page-container">
     <div class="row">
       <div class="col">
-        <h1>Sample Entry</h1>
+        <h1 id="detailEntryTitle">Loading...</h1>
       </div>
       <div class="col">
-        <h1>10/2/2</h1>
+        <h1 id="detailEntryDate"></h1>
       </div>
       <div class="col">
-        <h2>Tags: Sample</h2>
+        <h2  id="detailEntryTags">Tags:</h2>
       </div>
     </div>
     
     <hr>
 
-    <p>
-      Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-      Repellat porro ad nihil atque? Ipsam hic dolore quas molestiae deserunt rerum.
-      Sequi eligendi autem nesciunt, blanditiis repudiandae fugit saepe natus ea.
+    <p id="detailEntryContent">
+      Loading...
     </p>
 
     <h6>Download File:</h6>
@@ -89,6 +87,11 @@
   <script src="scripts/popper.js"></script>
   <script src="scripts/bootstrap-material-design.js"></script>
   <script>$("body").bootstrapMaterialDesign();</script>
+  <script src="/__/firebase/7.18.0/firebase-app.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
+  <script src="/__/firebase/init.js"></script>
   <script src="scripts/main.js"></script>
 </body>
 

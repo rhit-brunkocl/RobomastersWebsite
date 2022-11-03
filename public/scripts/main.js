@@ -84,7 +84,7 @@ rhit.FbEntriesManager = class {
 	}
 }
 
-rhit.FbSingleQuoteManager = class {
+rhit.FbSingleEntryManager = class {
 	constructor(entryID) {
 		this._documentSnapshot = {};
 		this._unsubscribe = null;
@@ -92,7 +92,7 @@ rhit.FbSingleQuoteManager = class {
 	}
 
 	beginListening(changeListener) {
-		console.log("Listen for changes to this quote");
+		console.log("Listen for changes to this entry");
 		this._unsubscribe = this._ref.onSnapshot((doc) => {
 			console.log("Entry updated ", doc);
 			if (doc.exists) {
@@ -146,16 +146,21 @@ rhit.FbSingleQuoteManager = class {
 
 
 
-rhit.NotebookEntryView = class {
+rhit.NotebookEntryController = class {
 	constructor() {
+		rhit.fbSingleEntryManager.beginListening(this.updateView.bind(this));
+
 		document.querySelector("#backButton").onclick = (event) => {
 			console.log("going back to list");
 			window.location.href = "entry-list.html";
 		}
 	}
 
-	methodName() {
-
+	updateView() {
+		document.querySelector("#detailEntryTitle").innerText = rhit.fbSingleEntryManager.title;
+		document.querySelector("#detailEntryDate").innerText = rhit.formatDate(rhit.fbSingleEntryManager.date.toDate());
+		document.querySelector("#detailEntryTags").innerText = `Tags: ${rhit.fbSingleEntryManager.tags}`;
+		document.querySelector("#detailEntryContent").innerText = rhit.fbSingleEntryManager.content;
 	}
 }
 
@@ -413,7 +418,20 @@ rhit.main = function () {
 	if (document.querySelector("#viewEntryPage"))
 	{
 		console.log("On view entry page");
-		new rhit.NotebookEntryView();
+
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+		const entryId = urlParams.get("id");
+
+		console.log(`viewing entry ${entryId}`);
+
+		if (!entryId)
+		{
+			window.location.href = "/entry-list.html";
+		}
+
+		rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(entryId);
+		new rhit.NotebookEntryController();
 	}
 	if (document.querySelector("#entryListPage"))
 	{
