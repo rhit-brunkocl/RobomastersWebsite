@@ -10,8 +10,17 @@ rhit.FB_COLLECTION_TAGS = "Tags";
 rhit.FB_TAGS_NAME = "name";
 rhit.fbEntriesManager = null;
 rhit.fbSingleEntryManager = null;
+rhit.fbTagsManager = null;
+rhit.FbSingleTagManager = null;
 rhit.fbAuthManager = null;
 
+// From: https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/35385518#35385518
+function htmlToElement(html) {
+	var template = document.createElement('template');
+	html = html.trim();
+	template.innerHTML = html;
+	return template.content.firstChild;
+}
 rhit.Entry = class {
 	constructor(id, title, content, date, tags, filename) {
 		this.id = id;
@@ -79,7 +88,7 @@ rhit.FbEntriesManager = class {
 	}
 }
 
-rhit.FbSingleQuoteManager = class {
+rhit.FbSingleEntryManager = class {
 	constructor(entryID) {
 		this._documentSnapshot = {};
 		this._unsubscribe = null;
@@ -87,7 +96,7 @@ rhit.FbSingleQuoteManager = class {
 	}
 
 	beginListening(changeListener) {
-		console.log("Listen for changes to this quote");
+		console.log("Listen for changes to this entry");
 		this._unsubscribe = this._ref.onSnapshot((doc) => {
 			console.log("Entry updated ", doc);
 			if (doc.exists) {
@@ -169,8 +178,9 @@ rhit.addEntryPageController = class {
 			// Post animation
 			document.querySelector("#inputTag").focus();
 		});
-
-
+		rhit.fbTagsManager = new rhit.FbTagsManager();
+		rhit.fbTagsManager.beginListening(this.updateTags.bind(this));
+		this.updateTags();
 
 		document.querySelector("#submitButton").addEventListener("click", (event) => {
 			const title = document.querySelector("#entryName").value;
@@ -184,26 +194,27 @@ rhit.addEntryPageController = class {
 
 	updateTags() {
 		console.log(`Num tags = ${rhit.fbTagsManager.length}`);
-		const newTags = htmlToElement(`<ul class="dropdown-menu" id = "tagContainer">
-		</ul>`);
+		const newTags = htmlToElement('<ul class="dropdown-menu" id = "tagContainer"></ul>');
 		for (let i = 0; i < rhit.fbTagsManager.length; i++) {
 			const tag = rhit.fbTagsManager.getTagAtIndex(i);
 			const newMenuItem = this._createDropdownItem(tag);
 			newTags.appendChild(newMenuItem);
+			$(document).on('change',`#${tag.id}`,function() {
+				if(this.checked){
+				   rhit.FbSingleEntryManager.tags.add(tag);
+				}
+			});
 		}
 
-
-		// Remove the old quoteListContainer
 		const oldTags = document.querySelector("#tagContainer");
 		oldTags.removeAttribute("id");
 		oldTags.hidden = true;
-		// Put in the new quoteListContainer
 		oldTags.parentElement.appendChild(newTags);
 	}
 
 	_createDropdownItem(tag){
 		return htmlToElement(`<div class="form-check">
-		<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+		<input class="form-check-input" type="checkbox" value="" id="${tag.id}">
 		<label class="form-check-label" for="flexCheckDefault">
 			${tag.name} 
 		</label>
@@ -272,7 +283,6 @@ rhit.FbSingleTagManager = class {
 				changeListener();
 			} else {
 				console.log("Document does not exist any longer.");
-				console.log("CONSIDER: automatically navigate back to the home page.");
 			}
 		});
 	}
@@ -356,6 +366,11 @@ rhit.main = function () {
 	{
 		console.log("On view entry page");
 		const notebookEntryView = new rhit.NotebookEntryView();
+	}
+	if (document.querySelector("#editAddEntryPage"))
+	{
+		console.log("On add entry page");
+		new this.addEntryPageController();
 	}
 };
 
