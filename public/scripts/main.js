@@ -176,6 +176,19 @@ rhit.NotebookEntryController = class {
 rhit.EntryListController = class {
 	constructor() {
 		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
+		
+		this.selectedRowEntry = null;
+
+		document.querySelector("#addEntry").onclick = (event) => {
+			window.location.href = "/edit-add-entry.html";
+		};
+
+		document.querySelector("#editEntry").onclick = (event) => {
+			if (this.selectedRowEntry) {
+				window.location.href = `/edit-add-entry.html?id=${this.selectedRowEntry.id}`;
+			}
+		};
+
 	}
 
 	updateList() {
@@ -192,6 +205,11 @@ rhit.EntryListController = class {
 
 				window.location.href = `/notebook-entry.html?id=${en.id}`;
 			};
+
+			newRow.onclick = (event) => {
+				console.log("clicked on row");
+				this.selectedRowEntry = en;
+			}
 		}
 
 		const oldList = document.querySelector("#listDiv");
