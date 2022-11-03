@@ -14,6 +14,11 @@ rhit.fbTagsManager = null;
 rhit.FbSingleTagManager = null;
 rhit.fbAuthManager = null;
 
+rhit.formatDate = function(d) {
+	const month = d.getMonth() + 1;
+	return `${month}/${d.getDate()}/${d.getFullYear()}`
+}
+
 // From: https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/35385518#35385518
 function htmlToElement(html) {
 	var template = document.createElement('template');
@@ -149,6 +154,7 @@ rhit.FbSingleEntryManager = class {
 }
 
 
+
 rhit.NotebookEntryView = class {
 	constructor() {
 		document.querySelector("#backButton").onclick = (event) => {
@@ -160,6 +166,60 @@ rhit.NotebookEntryView = class {
 	methodName() {
 
 	}
+}
+
+rhit.EntryListController = class {
+	constructor() {
+		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
+	}
+
+	updateList() {
+		const newList = htmlToElement('<div id="listDiv"></div>');
+
+		for (let i = 0; i < rhit.fbEntriesManager.length; i++)
+		{
+			const en = rhit.fbEntriesManager.getEntryAtIndex(i);
+			const newRow = this._createRow(en);
+			newList.appendChild(newRow);
+
+			newRow.querySelector(".title-text").onclick = (event) => {
+				//rhit.storage.setMovieQuoteId(mq.id);
+
+				window.location.href = `/notebook-entry.html?id=${en.id}`;
+			};
+		}
+
+		const oldList = document.querySelector("#listDiv");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+
+		oldList.parentElement.appendChild(newList);
+	}
+
+	_createRow(en) {
+
+		
+		return htmlToElement(
+			`<div class="option-container">
+			<div class="title-text option-text text-align">
+				${en[rhit.FB_KEY_TITLE]}
+			</div>
+			<div class="option-text">
+				${rhit.formatDate(en[rhit.FB_KEY_DATE].toDate())}
+			</div>
+			<div class="option-text">
+				${en[rhit.FB_KEY_TAGS]}
+			</div>
+		</div>`
+		);
+	}
+}
+
+function htmlToElement(html) {
+	var template = document.createElement('template');
+	html = html.trim(); // Never return a text node of whitespace as the result
+	template.innerHTML = html;
+	return template.content.firstChild;
 }
 
 rhit.addEntryPageController = class {
@@ -365,7 +425,18 @@ rhit.main = function () {
 	if (document.querySelector("#viewEntryPage"))
 	{
 		console.log("On view entry page");
-		const notebookEntryView = new rhit.NotebookEntryView();
+		new rhit.NotebookEntryView();
+	}
+	if (document.querySelector("#entryListPage"))
+	{
+		console.log("On entry list page")
+		rhit.fbEntriesManager = new rhit.FbEntriesManager();
+		new rhit.EntryListController();
+	}
+	if (document.querySelector("#editAddEntryPage"))
+	{
+		console.log("On add entry page");
+		new this.addEntryPageController();
 	}
 	if (document.querySelector("#editAddEntryPage"))
 	{
