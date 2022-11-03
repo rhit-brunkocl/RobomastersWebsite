@@ -5,7 +5,9 @@ rhit.FB_KEY_TITLE = "title";
 rhit.FB_KEY_CONTENT = "content";
 rhit.FB_KEY_DATE = "date";
 rhit.FB_KEY_TAGS = "tags";
-rhit.FB_KEY_FILENAME = "filename"
+rhit.FB_KEY_FILENAME = "filename";
+rhit.FB_COLLECTION_TAGS = "Tags";
+rhit.FB_TAGS_NAME = "name";
 rhit.fbEntriesManager = null;
 rhit.fbSingleEntryManager = null;
 rhit.fbAuthManager = null;
@@ -23,6 +25,13 @@ rhit.Entry = class {
 		this.date = date;
 		this.tags = tags;
 		this.filename = filename;
+	}
+}
+
+rhit.Tag = class {
+	constructor(id, name){
+		this.id = id;
+		this.name = name;
 	}
 }
 
@@ -202,6 +211,198 @@ function htmlToElement(html) {
 	html = html.trim(); // Never return a text node of whitespace as the result
 	template.innerHTML = html;
 	return template.content.firstChild;
+}
+
+rhit.addEntryPageController = class {
+	constructor(){
+		//for add
+		document.querySelector("#submitCreateTag").addEventListener("click", (event) => {
+			const name = document.querySelector("#inputTag").value;
+			rhit.fbTagsManager.add(name);
+		});
+
+		$("#createTagDialog").on("show.bs.modal", (event) => {
+			// Pre animation
+			document.querySelector("#inputTag").value = "";
+		});
+		$("#createTagDialog").on("shown.bs.modal", (event) => {
+			// Post animation
+			document.querySelector("#inputTag").focus();
+		});
+
+		document.querySelector("#submitButton").addEventListener("click", (event) => {
+			const title = document.querySelector("#entryName").value;
+			const content = document.querySelector("#entryContent").value;
+			const date = document.querySelector("#datePicker").value;
+			const tags = "Software";
+			const filename = document.querySelector("#formFile").value;
+			rhit.fbEntriesManager.add(title, content, date, tags, filename);
+		});
+	}
+
+	updateTags() {
+		console.log(`Num tags = ${rhit.fbTagsManager.length}`);
+		const newTags = htmlToElement(`<ul class="dropdown-menu" id = "tagContainer">
+		</ul>`);
+		for (let i = 0; i < rhit.fbTagsManager.length; i++) {
+			const tag = rhit.fbTagsManager.getTagAtIndex(i);
+			const newMenuItem = this._createDropdownItem(tag);
+			newTags.appendChild(newMenuItem);
+		}
+
+
+		// Remove the old quoteListContainer
+		const oldTags = document.querySelector("#tagContainer");
+		oldTags.removeAttribute("id");
+		oldTags.hidden = true;
+		// Put in the new quoteListContainer
+		oldTags.parentElement.appendChild(newTags);
+	}
+
+	_createDropdownItem(tag){
+		return htmlToElement(`<div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+		<label class="form-check-label" for="flexCheckDefault">
+			${tag.name} 
+		</label>
+	</div>`);
+	}
+}
+
+rhit.FbTagsManager = class {
+	constructor() {
+		this._documentSnapshots = [];
+		this._unsubscribe = null;
+
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_TAGS);
+	}
+	beginListening(changeListener) {
+		console.log("Listening for tags");
+		this._unsubscribe = this._ref
+			.limit(50).onSnapshot((querySnapshot) => {
+				this._documentSnapshots = querySnapshot.docs;
+				console.log("Updated " + this._documentSnapshots.length + " tags.");
+
+				if (changeListener) {
+					changeListener();
+				}
+
+			});
+	}
+	stopListening() {
+		this._unsubscribe();
+	}
+
+	add(name) {
+		this._ref.add({
+				[rhit.FB_TAGS_NAME]: name
+			})
+			.then(function (docRef) {
+				console.log("Document added with ID: ", docRef.id);
+			})
+			.catch(function (error) {
+				console.error("Error adding document: ", error);
+			});
+	}
+
+	get length() {
+		return this._documentSnapshots.length;
+	}
+	getTagAtIndex(index) {
+		const doc = this._documentSnapshots[index];
+		return new rhit.Tag(doc.id, doc.get(rhit.FB_TAGS_NAME));
+	}
+}
+
+rhit.FbSingleTagManager = class {
+	constructor(tagID) {
+		this._documentSnapshot = {};
+		this._unsubscribe = null;
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_TAGS).doc(tagID);
+	}
+
+	beginListening(changeListener) {
+		console.log("Listen for changes to this tag");
+		this._unsubscribe = this._ref.onSnapshot((doc) => {
+			console.log("Tag updated ", doc);
+			if (doc.exists) {
+				this._document = doc;
+				changeListener();
+			} else {
+				console.log("Document does not exist any longer.");
+				console.log("CONSIDER: automatically navigate back to the home page.");
+			}
+		});
+	}
+
+	stopListening() {
+		this._unsubscribe();
+	}
+	get name() {
+		return this._document.get(rhit.FB_TAGS_NAME);
+	}
+
+	delete() {
+		return this._ref.delete();
+	}
+}
+
+rhit.editEntryPageController = class {
+	constructor(entryID){
+		//for edit
+		document.querySelector("#submitCreateTag").addEventListener("click", (event) => {
+			const name = document.querySelector("#inputTag").value;
+			rhit.fbTagsManager.add(name);
+		});
+
+		$("#createTagDialog").on("show.bs.modal", (event) => {
+			// Pre animation
+			document.querySelector("#inputTag").value = "";
+		});
+		$("#createTagDialog").on("shown.bs.modal", (event) => {
+			// Post animation
+			document.querySelector("#inputTag").focus();
+		});
+
+
+
+		document.querySelector("#submitButton").addEventListener("click", (event) => {
+			const title = document.querySelector("#entryName").value;
+			const content = document.querySelector("#entryContent").value;
+			const date = document.querySelector("#datePicker").value;
+			const tags = "Software";
+			const filename = document.querySelector("#formFile").value;
+			rhit.fbEntriesManager.update(title, content, date, tags, filename);
+		});
+	}
+
+	updateTags() {
+		console.log(`Num tags = ${rhit.fbTagsManager.length}`);
+		const newTags = htmlToElement(`<ul class="dropdown-menu" id = "tagContainer">
+		</ul>`);
+		for (let i = 0; i < rhit.fbTagsManager.length; i++) {
+			const tag = rhit.fbTagsManager.getTagAtIndex(i);
+			const newMenuItem = this._createDropdownItem(tag);
+			newTags.appendChild(newMenuItem);
+		}
+
+
+		// Remove the old quoteListContainer
+		const oldTags = document.querySelector("#tagContainer");
+		oldTags.removeAttribute("id");
+		oldTags.hidden = true;
+		// Put in the new quoteListContainer
+		oldTags.parentElement.appendChild(newTags);
+	}
+
+	_createDropdownItem(tag){
+		return htmlToElement(`<div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+		<label class="form-check-label" for="flexCheckDefault">
+			${tag.name} 
+		</label>
+	</div>`);
+	}
 }
 
 /* Main */
