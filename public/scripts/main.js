@@ -205,17 +205,24 @@ rhit.EntryListController = class {
 		{
 			const en = rhit.fbEntriesManager.getEntryAtIndex(i);
 			const newRow = this._createRow(en);
+
 			newList.appendChild(newRow);
 
 			newRow.querySelector(".title-text").onclick = (event) => {
-				//rhit.storage.setMovieQuoteId(mq.id);
-
 				window.location.href = `/notebook-entry.html?id=${en.id}`;
 			};
 
 			newRow.onclick = (event) => {
 				console.log("clicked on row");
 				this.selectedRowEntry = en;
+
+				const rows = document.querySelectorAll(".option-container");
+				for (let i = 0; i < rows.length; i++)
+				{
+					rows[i].style = "background-color:#ffffff";
+				}
+
+				newRow.style = "background-color:#aaaaaa;";
 			}
 		}
 
