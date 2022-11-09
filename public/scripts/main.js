@@ -177,22 +177,47 @@ rhit.FbSingleEntryManager = class {
 
 
 
-rhit.NotebookEntryView = class {
+rhit.NotebookEntryController = class {
 	constructor() {
+		rhit.fbSingleEntryManager.beginListening(this.updateView.bind(this));
+
 		document.querySelector("#backButton").onclick = (event) => {
 			console.log("going back to list");
 			window.location.href = "entry-list.html";
 		}
 	}
 
-	methodName() {
-
+	updateView() {
+		document.querySelector("#detailEntryTitle").innerText = rhit.fbSingleEntryManager.title;
+		document.querySelector("#detailEntryDate").innerText = rhit.formatDate(rhit.fbSingleEntryManager.date.toDate());
+		document.querySelector("#detailEntryTags").innerText = `Tags: ${rhit.fbSingleEntryManager.tags}`;
+		document.querySelector("#detailEntryContent").innerText = rhit.fbSingleEntryManager.content;
 	}
 }
 
 rhit.EntryListController = class {
 	constructor() {
 		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
+		
+		this.selectedRowEntry = null;
+
+		document.querySelector("#addEntry").onclick = (event) => {
+			window.location.href = "/edit-add-entry.html";
+		};
+
+		document.querySelector("#editEntry").onclick = (event) => {
+			if (this.selectedRowEntry) {
+				window.location.href = `/edit-add-entry.html?id=${this.selectedRowEntry.id}`;
+			}
+		};
+
+		document.querySelector("#deleteEntry").onclick = (event) => {
+			if (this.selectedRowEntry) {
+				rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(this.selectedRowEntry.id);
+				rhit.fbSingleEntryManager.delete();
+			}
+		};
+
 	}
 
 	updateList() {
@@ -202,11 +227,24 @@ rhit.EntryListController = class {
 		{
 			const en = rhit.fbEntriesManager.getEntryAtIndex(i);
 			const newRow = this._createRow(en);
+
 			newList.appendChild(newRow);
 			newRow.querySelector(".title-text").onclick = (event) => {
-				
 				window.location.href = `/notebook-entry.html?id=${en.id}`;
 			};
+
+			newRow.onclick = (event) => {
+				console.log("clicked on row");
+				this.selectedRowEntry = en;
+
+				const rows = document.querySelectorAll(".option-container");
+				for (let i = 0; i < rows.length; i++)
+				{
+					rows[i].style = "background-color:#ffffff";
+				}
+
+				newRow.style = "background-color:#aaaaaa;";
+			}
 		}
 
 		const oldList = document.querySelector("#listDiv");
@@ -437,7 +475,20 @@ rhit.main = function () {
 	if (document.querySelector("#viewEntryPage"))
 	{
 		console.log("On view entry page");
-		new rhit.NotebookEntryView();
+
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+		const entryId = urlParams.get("id");
+
+		console.log(`viewing entry ${entryId}`);
+
+		if (!entryId)
+		{
+			window.location.href = "/entry-list.html";
+		}
+
+		rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(entryId);
+		new rhit.NotebookEntryController();
 	}
 	if (document.querySelector("#entryListPage"))
 	{
