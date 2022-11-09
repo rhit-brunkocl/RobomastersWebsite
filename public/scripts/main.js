@@ -148,6 +148,28 @@ rhit.FbSingleEntryManager = class {
 			console.log("Document has been updated");
 		});
 	}
+
+	addTag(tag){
+		tags = this.tags();
+		tags.add(tag);
+		this._ref.update({
+			[rhit.FB_KEY_TAGS]:tags
+		}).then(() => {
+			console.log("tag has been added");
+		});
+	}
+	removeTag(tag){
+		tags = this.tags();
+		tags = tags.filter(function(value){
+			return value.name == tag.name;
+		});
+		this._ref.update({
+			[rhit.FB_KEY_TAGS]:tags
+		}).then(() => {
+			console.log("tag has been removed");
+		});
+	}
+
 	delete() {
 		return this._ref.delete();
 	}
@@ -181,10 +203,8 @@ rhit.EntryListController = class {
 			const en = rhit.fbEntriesManager.getEntryAtIndex(i);
 			const newRow = this._createRow(en);
 			newList.appendChild(newRow);
-
 			newRow.querySelector(".title-text").onclick = (event) => {
-				//rhit.storage.setMovieQuoteId(mq.id);
-
+				
 				window.location.href = `/notebook-entry.html?id=${en.id}`;
 			};
 		}
@@ -197,8 +217,6 @@ rhit.EntryListController = class {
 	}
 
 	_createRow(en) {
-
-		
 		return htmlToElement(
 			`<div class="option-container">
 			<div class="title-text option-text text-align">
@@ -213,13 +231,6 @@ rhit.EntryListController = class {
 		</div>`
 		);
 	}
-}
-
-function htmlToElement(html) {
-	var template = document.createElement('template');
-	html = html.trim(); // Never return a text node of whitespace as the result
-	template.innerHTML = html;
-	return template.content.firstChild;
 }
 
 rhit.addEntryPageController = class {
@@ -238,9 +249,10 @@ rhit.addEntryPageController = class {
 			// Post animation
 			document.querySelector("#inputTag").focus();
 		});
+
 		rhit.fbTagsManager = new rhit.FbTagsManager();
-		rhit.fbTagsManager.beginListening(this.updateTags.bind(this));
-		this.updateTags();
+		rhit.fbTagsManager.beginListening(this.loadTags.bind(this));
+		this.loadTags();
 
 		document.querySelector("#submitButton").addEventListener("click", (event) => {
 			const title = document.querySelector("#entryName").value;
@@ -252,33 +264,29 @@ rhit.addEntryPageController = class {
 		});
 	}
 
-	updateTags() {
+	loadTags() {
 		console.log(`Num tags = ${rhit.fbTagsManager.length}`);
-		const newTags = htmlToElement('<ul class="dropdown-menu" id = "tagContainer"></ul>');
+
+		$('#tagContainer').empty();
+
 		for (let i = 0; i < rhit.fbTagsManager.length; i++) {
 			const tag = rhit.fbTagsManager.getTagAtIndex(i);
-			const newMenuItem = this._createDropdownItem(tag);
-			newTags.appendChild(newMenuItem);
-			$(document).on('change',`#${tag.id}`,function() {
-				if(this.checked){
-				   rhit.FbSingleEntryManager.tags.add(tag);
-				}
-			});
+			this.addTag(tag);
 		}
-
-		const oldTags = document.querySelector("#tagContainer");
-		oldTags.removeAttribute("id");
-		oldTags.hidden = true;
-		oldTags.parentElement.appendChild(newTags);
 	}
 
 	_createDropdownItem(tag){
-		return htmlToElement(`<div class="form-check">
-		<input class="form-check-input" type="checkbox" value="" id="${tag.id}">
+		return `<div class="form-check" id="${tag.name}">
+		<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
 		<label class="form-check-label" for="flexCheckDefault">
 			${tag.name} 
 		</label>
-	</div>`);
+	</div>`;
+	}
+
+	addTag(tag){
+		const newMenuItem = this._createDropdownItem(tag);
+		$('#tagContainer').append(newMenuItem);
 	}
 }
 
@@ -388,32 +396,36 @@ rhit.editEntryPageController = class {
 		});
 	}
 
-	updateTags() {
+	loadTags() {
 		console.log(`Num tags = ${rhit.fbTagsManager.length}`);
-		const newTags = htmlToElement(`<ul class="dropdown-menu" id = "tagContainer">
-		</ul>`);
+
+		$('#tagContainer').empty();
+
 		for (let i = 0; i < rhit.fbTagsManager.length; i++) {
 			const tag = rhit.fbTagsManager.getTagAtIndex(i);
-			const newMenuItem = this._createDropdownItem(tag);
-			newTags.appendChild(newMenuItem);
+			this.addTag(tag);
 		}
-
-
-		// Remove the old quoteListContainer
-		const oldTags = document.querySelector("#tagContainer");
-		oldTags.removeAttribute("id");
-		oldTags.hidden = true;
-		// Put in the new quoteListContainer
-		oldTags.parentElement.appendChild(newTags);
 	}
 
 	_createDropdownItem(tag){
-		return htmlToElement(`<div class="form-check">
+		return `<div class="form-check">
 		<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
 		<label class="form-check-label" for="flexCheckDefault">
 			${tag.name} 
 		</label>
-	</div>`);
+	</div>`;
+	}
+
+	addTag(tag){
+		const newMenuItem = this._createDropdownItem(tag);
+		$('#tagContainer').append(newMenuItem);
+		$(`#${tag.name}`).on("click", (event) => {
+			if($(`#${tag.name}`).is(':checked')){
+				rhit.fbSingleEntryManager.addTag(tag);
+			}else{
+				rhit.fbSingleEntryManager.removeTag(tag);
+			}
+		});
 	}
 }
 
@@ -432,11 +444,6 @@ rhit.main = function () {
 		console.log("On entry list page")
 		rhit.fbEntriesManager = new rhit.FbEntriesManager();
 		new rhit.EntryListController();
-	}
-	if (document.querySelector("#editAddEntryPage"))
-	{
-		console.log("On add entry page");
-		new this.addEntryPageController();
 	}
 	if (document.querySelector("#editAddEntryPage"))
 	{
