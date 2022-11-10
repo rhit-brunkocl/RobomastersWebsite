@@ -315,10 +315,24 @@ rhit.addEntryPageController = class {
 			var filename;
 			if(selectedFile == null){
 				filename = "";
+				rhit.fbEntriesManager.add(title, content, date, tags, filename);
+				window.location.href = "entry-list.html";
 			}else{
-				filename = selectedFile.name;
+				var storageRef = firebase.storage().ref();
+				var fileRef = storageRef.child(selectedFile.name);
+				const metadata = {
+					"content-type": selectedFile.type
+				};
+				fileRef.put(selectedFile, metadata).then((snapshot) => {
+					console.log('Uploaded a blob or file!');
+					fileRef.getDownloadURL().then((downloadURL) => {
+						console.log("File available at", downloadURL);
+						filename = downloadURL;
+						rhit.fbEntriesManager.add(title, content, date, tags, filename);
+						window.location.href = "entry-list.html";
+					});
+				});
 			}
-			rhit.fbEntriesManager.add(title, content, date, tags, filename);
 		});
 	}
 
