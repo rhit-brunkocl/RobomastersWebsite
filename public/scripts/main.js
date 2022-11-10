@@ -13,6 +13,7 @@ rhit.fbSingleEntryManager = null;
 rhit.fbTagsManager = null;
 rhit.FbSingleTagManager = null;
 rhit.fbAuthManager = null;
+rhit.tagsForEntry = [];
 
 rhit.formatDate = function(d) {
 	const month = d.getMonth() + 1;
@@ -288,6 +289,10 @@ rhit.addEntryPageController = class {
 			document.querySelector("#inputTag").focus();
 		});
 
+		rhit.tagsForEntry = [];
+
+		this.updateTags();
+
 		rhit.fbTagsManager = new rhit.FbTagsManager();
 		rhit.fbTagsManager.beginListening(this.loadTags.bind(this));
 		this.loadTags();
@@ -296,7 +301,7 @@ rhit.addEntryPageController = class {
 			const title = document.querySelector("#entryName").value;
 			const content = document.querySelector("#entryContent").value;
 			const date = document.querySelector("#datePicker").value;
-			const tags = "Software";
+			const tags = rhit.tagsForEntry;
 			const filename = document.querySelector("#formFile").value;
 			rhit.fbEntriesManager.add(title, content, date, tags, filename);
 		});
@@ -314,18 +319,47 @@ rhit.addEntryPageController = class {
 	}
 
 	_createDropdownItem(tag){
-		return `<div class="form-check" id="${tag.name}">
-		<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-		<label class="form-check-label" for="flexCheckDefault">
+		return `<div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="${tag.name}">
+		<label class="form-check-label" for="${tag.name}">
 			${tag.name} 
 		</label>
 	</div>`;
 	}
 
+
 	addTag(tag){
 		const newMenuItem = this._createDropdownItem(tag);
 		$('#tagContainer').append(newMenuItem);
+		$(`#${tag.name}`).on("click", (event) => {
+			if($(`#${tag.name}`).is(':checked')){
+				rhit.tagsForEntry.push(tag);
+				this.updateTags();
+				console.log(`${tag.name} checked`);
+				console.log(rhit.tagsForEntry);
+			}else{
+				rhit.tagsForEntry = rhit.tagsForEntry.filter(function(value){
+					return value.name != tag.name;
+				});
+				this.updateTags();
+				console.log(`${tag.name} unchecked`);
+				console.log(rhit.tagsForEntry);
+			}
+		});
 	}
+
+	
+	updateTags(){
+		var tagString = "";
+		if(rhit.tagsForEntry.length != 0){
+			for(var i = 0; i < rhit.tagsForEntry.length -1; i++){
+				tagString += rhit.tagsForEntry[i].name + ", ";
+			}
+			tagString += rhit.tagsForEntry[rhit.tagsForEntry.length - 1].name;
+		}
+		document.querySelector("#tagLabel").innerHTML = tagString;
+	}
+
 }
 
 rhit.FbTagsManager = class {
@@ -422,16 +456,25 @@ rhit.editEntryPageController = class {
 			document.querySelector("#inputTag").focus();
 		});
 
-
+		rhit.tagsForEntry = rhit.fbSingleEntryManager.tags();
 
 		document.querySelector("#submitButton").addEventListener("click", (event) => {
 			const title = document.querySelector("#entryName").value;
 			const content = document.querySelector("#entryContent").value;
 			const date = document.querySelector("#datePicker").value;
-			const tags = "Software";
+			const tags = rhit.tagsForEntry;
 			const filename = document.querySelector("#formFile").value;
 			rhit.fbEntriesManager.update(title, content, date, tags, filename);
 		});
+	}
+
+	updateTags(){
+		var tagString = "";
+		for(var i = 0; i < rhit.tagsForEntry.length -1; i++){
+			tagString += rhit.tagsForEntry[i].name + ", ";
+		}
+		tagString += rhit.tagsForEntry[rhit.tagsForEntry.length - 1].name;
+		document.querySelector("#tagLabel").innerHTML = tagString;
 	}
 
 	loadTags() {
@@ -447,24 +490,34 @@ rhit.editEntryPageController = class {
 
 	_createDropdownItem(tag){
 		return `<div class="form-check">
-		<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-		<label class="form-check-label" for="flexCheckDefault">
+		<input class="form-check-input" type="checkbox" value="" id="${tag.name}">
+		<label class="form-check-label" for="${tag.name}">
 			${tag.name} 
 		</label>
 	</div>`;
 	}
+
 
 	addTag(tag){
 		const newMenuItem = this._createDropdownItem(tag);
 		$('#tagContainer').append(newMenuItem);
 		$(`#${tag.name}`).on("click", (event) => {
 			if($(`#${tag.name}`).is(':checked')){
-				rhit.fbSingleEntryManager.addTag(tag);
+				rhit.tagsForEntry.push(tag);
+				this.updateTags();
+				console.log(`${tag.name} checked`);
+				console.log(rhit.tagsForEntry);
 			}else{
-				rhit.fbSingleEntryManager.removeTag(tag);
+				rhit.tagsForEntry = rhit.tagsForEntry.filter(function(value){
+					return value.name != tag.name;
+				});
+				this.updateTags();
+				console.log(`${tag.name} unchecked`);
+				console.log(rhit.tagsForEntry);
 			}
 		});
 	}
+
 }
 
 /* Main */
