@@ -275,6 +275,7 @@ rhit.EntryListController = class {
 rhit.addEntryPageController = class {
 	constructor(){
 		//for add
+		var selectedFile;
 		document.querySelector("#submitCreateTag").addEventListener("click", (event) => {
 			const name = document.querySelector("#inputTag").value;
 			rhit.fbTagsManager.add(name);
@@ -289,6 +290,12 @@ rhit.addEntryPageController = class {
 			document.querySelector("#inputTag").focus();
 		});
 
+		const fileInput = document.getElementById('formFile');
+		fileInput.onchange = () => {
+  			selectedFile = fileInput.files[0];
+  			console.log(selectedFile);
+		}
+
 		rhit.tagsForEntry = [];
 
 		this.updateTags();
@@ -301,8 +308,16 @@ rhit.addEntryPageController = class {
 			const title = document.querySelector("#entryName").value;
 			const content = document.querySelector("#entryContent").value;
 			const date = document.querySelector("#datePicker").value;
-			const tags = rhit.tagsForEntry;
-			const filename = document.querySelector("#formFile").value;
+			var tags = [];
+			for(var i = 0; i < rhit.tagsForEntry.length; i++){
+				tags.push(rhit.tagsForEntry[i].name);
+			}
+			var filename;
+			if(selectedFile == null){
+				filename = "";
+			}else{
+				filename = selectedFile.name;
+			}
 			rhit.fbEntriesManager.add(title, content, date, tags, filename);
 		});
 	}
@@ -456,6 +471,12 @@ rhit.editEntryPageController = class {
 			document.querySelector("#inputTag").focus();
 		});
 
+		const fileInput = document.getElementById('formFile');
+		fileInput.onchange = () => {
+  			const selectedFile = fileInput.files[0];
+  			console.log(selectedFile);
+		}
+
 		rhit.tagsForEntry = rhit.fbSingleEntryManager.tags();
 
 		document.querySelector("#submitButton").addEventListener("click", (event) => {
@@ -552,6 +573,7 @@ rhit.main = function () {
 	if (document.querySelector("#editAddEntryPage"))
 	{
 		console.log("On add entry page");
+		rhit.fbEntriesManager = new rhit.FbEntriesManager();
 		new this.addEntryPageController();
 	}
 };
