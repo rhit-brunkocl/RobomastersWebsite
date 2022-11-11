@@ -233,6 +233,11 @@ rhit.EntryListController = class {
 			rhit.fbEntriesManager.beginListening(rhit.FB_KEY_TAGS, "asc", this.updateList.bind(this));
 		};
 
+		document.querySelector("#searchBar").onchange = (event) => {
+			//typesense
+			console.log("User typed in search bar");
+		}
+
 	}
 
 	updateList() {
