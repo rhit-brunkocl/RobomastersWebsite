@@ -190,7 +190,7 @@ rhit.NotebookEntryController = class {
 
 	updateView() {
 		document.querySelector("#detailEntryTitle").innerText = rhit.fbSingleEntryManager.title;
-		document.querySelector("#detailEntryDate").innerText = rhit.formatDate(rhit.fbSingleEntryManager.date.toDate());
+		document.querySelector("#detailEntryDate").innerText = rhit.fbSingleEntryManager.date;
 		document.querySelector("#detailEntryTags").innerText = `Tags: ${rhit.fbSingleEntryManager.tags}`;
 		document.querySelector("#detailEntryContent").innerText = rhit.fbSingleEntryManager.content;
 	}
@@ -262,7 +262,7 @@ rhit.EntryListController = class {
 				${en[rhit.FB_KEY_TITLE]}
 			</div>
 			<div class="option-text">
-				${rhit.formatDate(en[rhit.FB_KEY_DATE].toDate())}
+				${en[rhit.FB_KEY_DATE]}
 			</div>
 			<div class="option-text">
 				${en[rhit.FB_KEY_TAGS]}
