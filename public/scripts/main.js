@@ -49,12 +49,11 @@ rhit.FbEntriesManager = class {
 	constructor() {
 		this._documentSnapshots = [];
 		this._unsubscribe = null;
-
 		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_ENTRIES);
 	}
-	beginListening(changeListener) {
+	beginListening(sortBy, sortDirection, changeListener) {
 		console.log("Listening for entries");
-		this._unsubscribe = this._ref.orderBy(rhit.FB_KEY_DATE, "desc")
+		this._unsubscribe = this._ref.orderBy(sortBy, sortDirection)
 			.limit(50).onSnapshot((querySnapshot) => {
 				this._documentSnapshots = querySnapshot.docs;
 				console.log("Updated " + this._documentSnapshots.length + " entries.");
@@ -198,7 +197,7 @@ rhit.NotebookEntryController = class {
 
 rhit.EntryListController = class {
 	constructor() {
-		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
+		rhit.fbEntriesManager.beginListening(rhit.FB_KEY_DATE, "desc", this.updateList.bind(this));
 		
 		this.selectedRowEntry = null;
 
@@ -217,6 +216,21 @@ rhit.EntryListController = class {
 				rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(this.selectedRowEntry.id);
 				rhit.fbSingleEntryManager.delete();
 			}
+		};
+
+		document.querySelector("#sortByName").onclick = (event) => {
+			rhit.fbEntriesManager.stopListening();
+			rhit.fbEntriesManager.beginListening(rhit.FB_KEY_TITLE, "asc", this.updateList.bind(this));
+		};
+
+		document.querySelector("#sortByDate").onclick = (event) => {
+			rhit.fbEntriesManager.stopListening();
+			rhit.fbEntriesManager.beginListening(rhit.FB_KEY_DATE, "desc", this.updateList.bind(this));
+		};
+
+		document.querySelector("#sortByTags").onclick = (event) => {
+			rhit.fbEntriesManager.stopListening();
+			rhit.fbEntriesManager.beginListening(rhit.FB_KEY_TAGS, "asc", this.updateList.bind(this));
 		};
 
 	}
