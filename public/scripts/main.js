@@ -204,9 +204,13 @@ rhit.FbAuthManager = class {
 	}
 
 	beginListening(changeListener) {
-		firebase.auth().onAuthStateChanged((user) => {
-			this._user = user;
-			changeListener();
+		return new Promise((resolve, reject) => {
+			firebase.auth().onAuthStateChanged((user) => {
+				this._user = user;
+				console.log(this._user);
+				changeListener();
+				resolve();
+			});
 		});
 	}
 
@@ -300,7 +304,6 @@ rhit.FbUserManager = class {
 		this._unsubscribe = userRef.onSnapshot((doc) => {
 			if (doc.exists)
 			{
-				console.log("we have a user");
 				this._document = doc;
 				changeListener();
 			}
@@ -332,8 +335,73 @@ rhit.FbUserManager = class {
 		return this._document.get(rhit.FB_KEY_NAME);
 	}
 
+	get username() {
+		return this._document.get(rhit.FB_KEY_USERNAME);
+	}
+
+	get email() {
+		return this._document.get(rhit.FB_KEY_EMAIL);
+	}
+
+	get major() {
+		return this._document.get(rhit.FB_KEY_MAJOR);
+	}
+
+	get year() {
+		return this._document.get(rhit.FB_KEY_YEAR);
+	}
+
+	get subteams() {
+		return this._document.get(rhit.FB_KEY_SUBTEAMS);
+	}
+
 	get isListening() {
 		return !!this._unsubscribe;
+	}
+}
+
+rhit.ProfilePageController = class {
+	constructor() {
+
+		rhit.fbUserManager.beginListening(rhit.fbAuthManager.uid, this.initializeInfo.bind(this));
+
+		this.chosenMajor = "None";
+		this.chosenYear = "1st";
+
+		const majorBtns = document.querySelectorAll(".majorItem");
+		for (let i = 0; i < majorBtns.length; i++)
+		{
+			majorBtns[i].onclick = (event) => {
+				this.chosenMajor = majorBtns[i].innerText;
+				document.querySelector("#majorText").innerText = "Chosen Major: " + this.chosenMajor;
+			}
+		}
+
+		const yearBtns = document.querySelectorAll(".yearItem");
+		for (let i = 0; i < yearBtns.length; i++)
+		{
+			yearBtns[i].onclick = (event) => {
+				this.chosenYear = yearBtns[i].innerText;
+				document.querySelector("#yearText").innerText = "Chosen Year: " + this.chosenYear;
+			}
+		}
+	}
+
+	initializeInfo() {
+		this.chosenMajor = rhit.fbUserManager.major;
+		this.chosenYear = rhit.fbUserManager.year;
+
+		document.querySelector("#changeName").value = rhit.fbUserManager.name;
+		document.querySelector("#changeUsername").value = rhit.fbUserManager.username;
+		document.querySelector("#majorText").innerText = "Chosen Major: " + this.chosenMajor;
+		document.querySelector("#yearText").innerText = "Chosen Year: " + rhit.fbUserManager.year;
+
+
+		const subteams = rhit.fbUserManager.subteams;
+		document.querySelector("#softwareCheck").checked = (subteams.includes("Software"));
+		document.querySelector("#hardwareCheck").checked = (subteams.includes("Hardware"));
+		document.querySelector("#mechanicalCheck").checked = (subteams.includes("Mechanical"));
+		document.querySelector("#outreachCheck").checked = (subteams.includes("Outreach"));
 	}
 }
 
@@ -753,25 +821,6 @@ rhit.editEntryPageController = class {
 
 }
 
-// rhit.createUserObjectIfNeeded = function() {
-// 	return new Promise((resolve, reject) => {
-// 		if (!rhit.fbAuthManager.getIsSignedIn())
-// 		{
-// 			resolve(false);
-// 			return;
-// 		}
-// 		if (!document.querySelector("#loginPage"))
-// 		{
-// 			resolve(false);
-// 			return;
-// 		}
-// 		rhit.fbUserManager.addNewUserMaybe(rhit.fbAuthManager.uid, rhit.fbAuthManager.name)
-// 		.then((isUserNew) => {
-// 			resolve(isUserNew);
-// 		});
-// 	});
-// }
-
 /* Main */
 /** function and class syntax examples */
 rhit.main = function () {
@@ -781,19 +830,8 @@ rhit.main = function () {
 	rhit.fbAuthManager.beginListening(() => {
 		console.log("auth change callback");
 		console.log("isSignedIn = ", rhit.fbAuthManager.getIsSignedIn());
-
-		// rhit.createUserObjectIfNeeded().then((isUserNew) => {
-
-		// 	console.log('isUserNew :>> ', isUserNew);
-		// 	if (isUserNew)
-		// 	{
-		// 		window.location.href = '/edit-profile.html';
-		// 		return;
-		// 	}
-		// });
-	});
-
-	rhit.fbUserManager = new rhit.FbUserManager();
+	}).then(() => {
+		rhit.fbUserManager = new rhit.FbUserManager();
 	new rhit.NavbarController();
 
 	if (document.querySelector("#viewEntryPage"))
@@ -829,8 +867,14 @@ rhit.main = function () {
 	if (document.querySelector("#loginPage"))
 	{
 		console.log("On login page");
-		new this.LoginPageController();
+		new rhit.LoginPageController();
 	}
+	if (document.querySelector("#editProfilePage"))
+	{
+		console.log("On edit profile page");
+		new rhit.ProfilePageController();
+	}
+	});
 };
 
 rhit.main();
