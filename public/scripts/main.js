@@ -46,6 +46,19 @@ rhit.Tag = class {
 	}
 }
 
+rhit.NavbarController = class {
+	constructor() {
+		const logoutBtn = document.querySelector("#logoutBtn");
+		if (logoutBtn) {
+			logoutBtn.onclick = (event) => {
+				rhit.fbAuthManager.signOut().then(() => {
+					window.location.href = "/";
+				})
+			}
+		}
+	}
+}
+
 rhit.FbEntriesManager = class {
 	constructor() {
 		this._documentSnapshots = [];
@@ -189,7 +202,22 @@ rhit.FbAuthManager = class {
 		});
 	}
 
-	signIn() {
+	register(name, email, username, password) {
+		firebase.auth().createUserWithEmailAndPassword(email, password)
+		.then((userCredential) => {
+			// Signed in 
+			console.log("created user");
+			var user = userCredential.user;
+			// ...
+		})
+		.catch((error) => {
+			var errorCode = error.code;
+			var errorMessage = error.message;
+			// ..
+		});
+	}
+
+	signIn(email, password) {
 		firebase.auth().signInWithEmailAndPassword(email, password)
 		.then((userCredential) => {
 			// Signed in
@@ -204,24 +232,9 @@ rhit.FbAuthManager = class {
 	}
 
 	signOut() {
-		firebase.auth().signOut().catch((error) => {
+		return firebase.auth().signOut().catch((error) => {
 			console.log("signout error");
 		  });
-	}
-
-	startFirebaseUI() {
-		// FirebaseUI config.
-		var uiConfig = {
-			signInSuccessUrl: '/',
-			signInOptions: [
-				firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-				firebase.auth.EmailAuthProvider.PROVIDER_ID,
-				firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-				firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
-			],
-		};
-		const ui = new firebaseui.auth.AuthUI(firebase.auth());
-		ui.start('#firebaseui-auth-container', uiConfig);
 	}
 
 	getIsSignedIn() {
@@ -236,10 +249,6 @@ rhit.FbAuthManager = class {
 
 	get name() {
 		return this._name || this._user.displayName;
-	}
-
-	get photoUrl() {
-		return this._photoUrl || this._user.photoURL;
 	}
 }
 
@@ -320,11 +329,20 @@ rhit.FbUserManager = class {
 
 rhit.LoginPageController = class {
 	constructor() {
+
 		document.querySelector("#loginBtn").onclick = (event) => {
-			rhit.fbAuthManager.signIn();
+			const loginEmailValue = document.querySelector("#loginEmail").value;
+			const loginPasswordValue = document.querySelector("#loginPassword").value;
+			rhit.fbAuthManager.signIn(loginEmailValue, loginPasswordValue);
 		};
 
-		//rhit.fbAuthManager.startFirebaseUI();
+		document.querySelector("#registerBtn").onclick = (event) => {
+			const registerNameValue = document.querySelector("#registerName").value;
+			const registerEmailValue = document.querySelector("#registerEmail").value;
+			const registerUsernameValue = document.querySelector("#registerUsername").value;
+			const registerPasswordValue = document.querySelector("#registerPassword").value;
+			rhit.fbAuthManager.register(registerNameValue, registerEmailValue, registerUsernameValue, registerPasswordValue);
+		}
 	}
 }
 
@@ -725,28 +743,48 @@ rhit.editEntryPageController = class {
 
 }
 
+rhit.createUserObjectIfNeeded = function() {
+	return new Promise((resolve, reject) => {
+		if (!rhit.fbAuthManager.getIsSignedIn())
+		{
+			resolve(false);
+			return;
+		}
+		if (!document.querySelector("#loginPage"))
+		{
+			resolve(false);
+			return;
+		}
+		rhit.fbUserManager.addNewUserMaybe(rhit.fbAuthManager.uid, rhit.fbAuthManager.name)
+		.then((isUserNew) => {
+			resolve(isUserNew);
+		});
+	});
+}
+
 /* Main */
 /** function and class syntax examples */
 rhit.main = function () {
 	console.log("Ready");
 
-	// rhit.fbAuthManager = new rhit.FbAuthManager();
-	// rhit.fbAuthManager.beginListening(() => {
-	// 	console.log("auth change callback");
-	// 	console.log("isSignedIn = ", rhit.fbAuthManager.getIsSignedIn());
+	rhit.fbAuthManager = new rhit.FbAuthManager();
+	rhit.fbAuthManager.beginListening(() => {
+		console.log("auth change callback");
+		console.log("isSignedIn = ", rhit.fbAuthManager.getIsSignedIn());
 
-	// 	rhit.createUserObjectIfNeeded().then((isUserNew) => {
+		rhit.createUserObjectIfNeeded().then((isUserNew) => {
 
-	// 		console.log('isUserNew :>> ', isUserNew);
-	// 		if (isUserNew)
-	// 		{
-	// 			window.location.href = '/edit-profile.html';
-	// 			return;
-	// 		}
-	// 	});
-	// });
+			console.log('isUserNew :>> ', isUserNew);
+			if (isUserNew)
+			{
+				window.location.href = '/edit-profile.html';
+				return;
+			}
+		});
+	});
 
-	// rhit.fbUserManager = new rhit.FbUserManager();
+	rhit.fbUserManager = new rhit.FbUserManager();
+	new rhit.NavbarController();
 
 	if (document.querySelector("#viewEntryPage"))
 	{
