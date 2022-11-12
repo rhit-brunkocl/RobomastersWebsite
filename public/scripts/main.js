@@ -324,7 +324,7 @@ rhit.LoginPageController = class {
 			rhit.fbAuthManager.signIn();
 		};
 
-		rhit.fbAuthManager.startFirebaseUI();
+		//rhit.fbAuthManager.startFirebaseUI();
 	}
 }
 
