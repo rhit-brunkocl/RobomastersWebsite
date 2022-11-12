@@ -7,6 +7,13 @@ rhit.FB_KEY_CONTENT = "content";
 rhit.FB_KEY_DATE = "date";
 rhit.FB_KEY_TAGS = "tags";
 rhit.FB_KEY_FILENAME = "filename";
+rhit.FB_KEY_NAME = "name";
+rhit.FB_KEY_USERNAME = "username";
+rhit.FB_KEY_ISADMIN = "isAdmin";
+rhit.FB_KEY_MAJOR = "major";
+rhit.FB_KEY_EMAIL = "email";
+rhit.FB_KEY_SUBTEAMS = "subteams";
+rhit.FB_KEY_YEAR = "year";
 rhit.FB_COLLECTION_TAGS = "Tags";
 rhit.FB_TAGS_NAME = "name";
 rhit.fbEntriesManager = null;
@@ -14,6 +21,7 @@ rhit.fbSingleEntryManager = null;
 rhit.fbTagsManager = null;
 rhit.FbSingleTagManager = null;
 rhit.fbAuthManager = null;
+rhit.fbUserManager = null;
 rhit.tagsForEntry = [];
 
 rhit.formatDate = function(d) {
@@ -205,24 +213,22 @@ rhit.FbAuthManager = class {
 	register(name, email, username, password) {
 		firebase.auth().createUserWithEmailAndPassword(email, password)
 		.then((userCredential) => {
-			// Signed in 
 			console.log("created user");
 			var user = userCredential.user;
-			// ...
+			console.log(user);
+			rhit.fbUserManager.addNewUser(user.uid, name, email, username);
 		})
 		.catch((error) => {
 			var errorCode = error.code;
 			var errorMessage = error.message;
-			// ..
+			console.log(errorCode, errorMessage);
 		});
 	}
 
 	signIn(email, password) {
 		firebase.auth().signInWithEmailAndPassword(email, password)
 		.then((userCredential) => {
-			// Signed in
 			console.log("signed in");
-			// ...
 		})
 		.catch((error) => {
 			var errorCode = error.code;
@@ -238,12 +244,10 @@ rhit.FbAuthManager = class {
 	}
 
 	getIsSignedIn() {
-		console.log(this._user);
 		return !!this._user;
 	}
 
 	get uid() {
-		console.log(this._user);
 		return this._user.uid;
 	}
 
@@ -259,7 +263,7 @@ rhit.FbUserManager = class {
 		this._unsubscribe = null;
 	}
 
-	addNewUserMaybe(uid, name) {
+	addNewUser(uid, name, email, username) {
 		var userRef = this._collectionRef.doc(uid);
 
 		return userRef.get().then((doc) => {
@@ -272,6 +276,12 @@ rhit.FbUserManager = class {
 
 				return userRef.set({
 					[rhit.FB_KEY_NAME]: name,
+					[rhit.FB_KEY_EMAIL]: email,
+					[rhit.FB_KEY_USERNAME]: username,
+					[rhit.FB_KEY_ISADMIN]: false,
+					[rhit.FB_KEY_MAJOR]: "",
+					[rhit.FB_KEY_SUBTEAMS]: [],
+					[rhit.FB_KEY_YEAR]: 1,
 				}).then(() => {
 					console.log("user data successfully written!");
 					return true;
@@ -743,24 +753,24 @@ rhit.editEntryPageController = class {
 
 }
 
-rhit.createUserObjectIfNeeded = function() {
-	return new Promise((resolve, reject) => {
-		if (!rhit.fbAuthManager.getIsSignedIn())
-		{
-			resolve(false);
-			return;
-		}
-		if (!document.querySelector("#loginPage"))
-		{
-			resolve(false);
-			return;
-		}
-		rhit.fbUserManager.addNewUserMaybe(rhit.fbAuthManager.uid, rhit.fbAuthManager.name)
-		.then((isUserNew) => {
-			resolve(isUserNew);
-		});
-	});
-}
+// rhit.createUserObjectIfNeeded = function() {
+// 	return new Promise((resolve, reject) => {
+// 		if (!rhit.fbAuthManager.getIsSignedIn())
+// 		{
+// 			resolve(false);
+// 			return;
+// 		}
+// 		if (!document.querySelector("#loginPage"))
+// 		{
+// 			resolve(false);
+// 			return;
+// 		}
+// 		rhit.fbUserManager.addNewUserMaybe(rhit.fbAuthManager.uid, rhit.fbAuthManager.name)
+// 		.then((isUserNew) => {
+// 			resolve(isUserNew);
+// 		});
+// 	});
+// }
 
 /* Main */
 /** function and class syntax examples */
@@ -772,15 +782,15 @@ rhit.main = function () {
 		console.log("auth change callback");
 		console.log("isSignedIn = ", rhit.fbAuthManager.getIsSignedIn());
 
-		rhit.createUserObjectIfNeeded().then((isUserNew) => {
+		// rhit.createUserObjectIfNeeded().then((isUserNew) => {
 
-			console.log('isUserNew :>> ', isUserNew);
-			if (isUserNew)
-			{
-				window.location.href = '/edit-profile.html';
-				return;
-			}
-		});
+		// 	console.log('isUserNew :>> ', isUserNew);
+		// 	if (isUserNew)
+		// 	{
+		// 		window.location.href = '/edit-profile.html';
+		// 		return;
+		// 	}
+		// });
 	});
 
 	rhit.fbUserManager = new rhit.FbUserManager();
