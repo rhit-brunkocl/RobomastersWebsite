@@ -23,7 +23,7 @@
     </div>
   </nav>
 
-  <div id="mainPage" class="container page-container">
+  <div id="loginPage" class="container page-container">
     <div class = "row justify-content-md-center">
       <div class = "col-12">
           <h1 style = "text-align: center">Register/Login</h1>
@@ -37,48 +37,48 @@
       <div class = "col-6">
           <div class = "container" style = "text-align: center;">
             <div class="form-group">
-              <label for="exampleInputEmail1">Name</label>
-              <input type="name" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter your name">
+              <label for="registerName">Name</label>
+              <input type="name" class="form-control" id="registerName" aria-describedby="emailHelp" placeholder="Enter your name">
             </div>
           </div>
       </div>
       <div class = "col-6">
         <div class = "container" style = "text-align: center;">
           <div class="form-group">
-            <label for="exampleInputEmail1">Username</label>
-            <input type="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter your username">
+            <label for="loginUsername">Username</label>
+            <input type="username" class="form-control" id="loginUsername" aria-describedby="emailHelp" placeholder="Enter your username">
           </div>
         </div>
       </div>
       <div class = "col-6">
         <div class = "container" style = "text-align: center;">
           <div class="form-group">
-            <label for="exampleInputEmail1">Create Username</label>
-            <input type="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Create username">
+            <label for="registerUsername">Create Username</label>
+            <input type="username" class="form-control" id="registerUsername" aria-describedby="emailHelp" placeholder="Create username">
           </div>
         </div>
       </div>
       <div class = "col-6">
         <div class = "container" style = "text-align: center;">
           <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Enter your password">
+            <label for="loginPassword">Password</label>
+            <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password">
           </div>
         </div>
       </div>
       <div class = "col-6">
         <div class = "container" style = "text-align: center;">
           <div class="form-group">
-            <label for="exampleInputPassword1">Create Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Create password">
+            <label for="registerPassword">Create Password</label>
+            <input type="password" class="form-control" id="registerPassword" placeholder="Create password">
           </div>
         </div>
       </div>
       <div class = "col-6">
-        <a class = "btn btn-outline-primary btn-block" href = "dashboard.html" role = "button">Login</a>
+        <a id="loginBtn" class = "btn btn-outline-primary btn-block" href = "dashboard.html" role = "button">Login</a>
       </div>
       <div class = "col-6">
-        <a class = "btn btn-outline-primary btn-block" href = "dashboard.html" role = "button">Register</a>
+        <a id="registerBtn" class = "btn btn-outline-primary btn-block" href = "dashboard.html" role = "button">Register</a>
       </div>
       <div class = "col-6">
 
@@ -89,6 +89,11 @@
   <script src="scripts/popper.js"></script>
   <script src="scripts/bootstrap-material-design.js"></script>
   <script>$("body").bootstrapMaterialDesign();</script>
+  <script src="/__/firebase/7.18.0/firebase-app.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
+  <script src="/__/firebase/init.js"></script>
   <script src="scripts/main.js"></script>
 </body>
 

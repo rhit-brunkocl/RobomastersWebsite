@@ -1,6 +1,7 @@
 var rhit = rhit || {};
 
 rhit.FB_COLLECTION_ENTRIES = "Entries";
+rhit.FB_COLLECTION_USERS = "Users";
 rhit.FB_KEY_TITLE = "title";
 rhit.FB_KEY_CONTENT = "content";
 rhit.FB_KEY_DATE = "date";
@@ -175,7 +176,157 @@ rhit.FbSingleEntryManager = class {
 	}
 }
 
+rhit.FbAuthManager = class {
+	constructor() {
+		this._user = null;
+		this._name = "";
+	}
 
+	beginListening(changeListener) {
+		firebase.auth().onAuthStateChanged((user) => {
+			this._user = user;
+			changeListener();
+		});
+	}
+
+	signIn() {
+		firebase.auth().signInWithEmailAndPassword(email, password)
+		.then((userCredential) => {
+			// Signed in
+			console.log("signed in");
+			// ...
+		})
+		.catch((error) => {
+			var errorCode = error.code;
+			var errorMessage = error.message;
+			console.log(errorCode, errorMessage);
+  });
+	}
+
+	signOut() {
+		firebase.auth().signOut().catch((error) => {
+			console.log("signout error");
+		  });
+	}
+
+	startFirebaseUI() {
+		// FirebaseUI config.
+		var uiConfig = {
+			signInSuccessUrl: '/',
+			signInOptions: [
+				firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+				firebase.auth.EmailAuthProvider.PROVIDER_ID,
+				firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+				firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+			],
+		};
+		const ui = new firebaseui.auth.AuthUI(firebase.auth());
+		ui.start('#firebaseui-auth-container', uiConfig);
+	}
+
+	getIsSignedIn() {
+		console.log(this._user);
+		return !!this._user;
+	}
+
+	get uid() {
+		console.log(this._user);
+		return this._user.uid;
+	}
+
+	get name() {
+		return this._name || this._user.displayName;
+	}
+
+	get photoUrl() {
+		return this._photoUrl || this._user.photoURL;
+	}
+}
+
+rhit.FbUserManager = class {
+	constructor() {
+		this._collectionRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS);
+		this._document = null;
+		this._unsubscribe = null;
+	}
+
+	addNewUserMaybe(uid, name) {
+		var userRef = this._collectionRef.doc(uid);
+
+		return userRef.get().then((doc) => {
+			if (doc.exists) {
+				console.log("Already user. Document data: ", doc.data());
+				return false;
+			}
+			else{
+				console.log("no such document! Must create user");
+
+				return userRef.set({
+					[rhit.FB_KEY_NAME]: name,
+				}).then(() => {
+					console.log("user data successfully written!");
+					return true;
+				}).catch((error) => {
+					console.log("error setting user data", error);
+				});
+			}
+		}).catch((error) => {
+			console.log("error getting doc", error);
+		})
+	}
+
+	beginListening(uid, changeListener) {
+		const userRef = this._collectionRef.doc(uid);
+
+		this._unsubscribe = userRef.onSnapshot((doc) => {
+			if (doc.exists)
+			{
+				console.log("we have a user");
+				this._document = doc;
+				changeListener();
+			}
+			else
+			{
+				console.log("No user.");
+			}
+		});
+	}
+
+	stopListening() {
+		this._unsubscribe();
+	}
+
+	updateName(name) {
+		const userRef = this._collectionRef.doc(rhit.fbAuthManager.uid);
+		return userRef.update({
+			[rhit.FB_KEY_NAME]: name,
+		})
+		.then(() => {
+			console.log("Document successfully updated!");
+		})
+		.catch(function (error) {
+			console.error("Error updating document: ", error);
+		});
+	}
+
+	get name() {
+		return this._document.get(rhit.FB_KEY_NAME);
+	}
+
+	get isListening() {
+		return !!this._unsubscribe;
+	}
+}
+
+rhit.LoginPageController = class {
+	constructor() {
+		document.querySelector("#loginBtn").onclick = (event) => {
+			rhit.fbAuthManager.signIn();
+		};
+
+		rhit.fbAuthManager.startFirebaseUI();
+	}
+}
 
 rhit.NotebookEntryController = class {
 	constructor() {
@@ -579,6 +730,24 @@ rhit.editEntryPageController = class {
 rhit.main = function () {
 	console.log("Ready");
 
+	// rhit.fbAuthManager = new rhit.FbAuthManager();
+	// rhit.fbAuthManager.beginListening(() => {
+	// 	console.log("auth change callback");
+	// 	console.log("isSignedIn = ", rhit.fbAuthManager.getIsSignedIn());
+
+	// 	rhit.createUserObjectIfNeeded().then((isUserNew) => {
+
+	// 		console.log('isUserNew :>> ', isUserNew);
+	// 		if (isUserNew)
+	// 		{
+	// 			window.location.href = '/edit-profile.html';
+	// 			return;
+	// 		}
+	// 	});
+	// });
+
+	// rhit.fbUserManager = new rhit.FbUserManager();
+
 	if (document.querySelector("#viewEntryPage"))
 	{
 		console.log("On view entry page");
@@ -608,6 +777,11 @@ rhit.main = function () {
 		console.log("On add entry page");
 		rhit.fbEntriesManager = new rhit.FbEntriesManager();
 		new this.addEntryPageController();
+	}
+	if (document.querySelector("#loginPage"))
+	{
+		console.log("On login page");
+		new this.LoginPageController();
 	}
 };
 
