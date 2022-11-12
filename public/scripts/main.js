@@ -1,11 +1,19 @@
 var rhit = rhit || {};
 
 rhit.FB_COLLECTION_ENTRIES = "Entries";
+rhit.FB_COLLECTION_USERS = "Users";
 rhit.FB_KEY_TITLE = "title";
 rhit.FB_KEY_CONTENT = "content";
 rhit.FB_KEY_DATE = "date";
 rhit.FB_KEY_TAGS = "tags";
 rhit.FB_KEY_FILENAME = "filename";
+rhit.FB_KEY_NAME = "name";
+rhit.FB_KEY_USERNAME = "username";
+rhit.FB_KEY_ISADMIN = "isAdmin";
+rhit.FB_KEY_MAJOR = "major";
+rhit.FB_KEY_EMAIL = "email";
+rhit.FB_KEY_SUBTEAMS = "subteams";
+rhit.FB_KEY_YEAR = "year";
 rhit.FB_COLLECTION_TAGS = "Tags";
 rhit.FB_TAGS_NAME = "name";
 rhit.fbEntriesManager = null;
@@ -13,6 +21,7 @@ rhit.fbSingleEntryManager = null;
 rhit.fbTagsManager = null;
 rhit.FbSingleTagManager = null;
 rhit.fbAuthManager = null;
+rhit.fbUserManager = null;
 rhit.tagsForEntry = [];
 
 rhit.formatDate = function(d) {
@@ -45,16 +54,28 @@ rhit.Tag = class {
 	}
 }
 
+rhit.NavbarController = class {
+	constructor() {
+		const logoutBtn = document.querySelector("#logoutBtn");
+		if (logoutBtn) {
+			logoutBtn.onclick = (event) => {
+				rhit.fbAuthManager.signOut().then(() => {
+					window.location.href = "/";
+				})
+			}
+		}
+	}
+}
+
 rhit.FbEntriesManager = class {
 	constructor() {
 		this._documentSnapshots = [];
 		this._unsubscribe = null;
-
 		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_ENTRIES);
 	}
-	beginListening(changeListener) {
+	beginListening(sortBy, sortDirection, changeListener) {
 		console.log("Listening for entries");
-		this._unsubscribe = this._ref.orderBy(rhit.FB_KEY_DATE, "desc")
+		this._unsubscribe = this._ref.orderBy(sortBy, sortDirection)
 			.limit(50).onSnapshot((querySnapshot) => {
 				this._documentSnapshots = querySnapshot.docs;
 				console.log("Updated " + this._documentSnapshots.length + " entries.");
@@ -176,7 +197,232 @@ rhit.FbSingleEntryManager = class {
 	}
 }
 
+rhit.FbAuthManager = class {
+	constructor() {
+		this._user = null;
+		this._name = "";
+	}
 
+	beginListening(changeListener) {
+		return new Promise((resolve, reject) => {
+			firebase.auth().onAuthStateChanged((user) => {
+				this._user = user;
+				console.log(this._user);
+				changeListener();
+				resolve();
+			});
+		});
+	}
+
+	register(name, email, username, password) {
+		firebase.auth().createUserWithEmailAndPassword(email, password)
+		.then((userCredential) => {
+			console.log("created user");
+			var user = userCredential.user;
+			console.log(user);
+			rhit.fbUserManager.addNewUser(user.uid, name, email, username);
+		})
+		.catch((error) => {
+			var errorCode = error.code;
+			var errorMessage = error.message;
+			console.log(errorCode, errorMessage);
+		});
+	}
+
+	signIn(email, password) {
+		firebase.auth().signInWithEmailAndPassword(email, password)
+		.then((userCredential) => {
+			console.log("signed in");
+		})
+		.catch((error) => {
+			var errorCode = error.code;
+			var errorMessage = error.message;
+			console.log(errorCode, errorMessage);
+  });
+	}
+
+	signOut() {
+		return firebase.auth().signOut().catch((error) => {
+			console.log("signout error");
+		  });
+	}
+
+	getIsSignedIn() {
+		return !!this._user;
+	}
+
+	get uid() {
+		return this._user.uid;
+	}
+
+	get name() {
+		return this._name || this._user.displayName;
+	}
+}
+
+rhit.FbUserManager = class {
+	constructor() {
+		this._collectionRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS);
+		this._document = null;
+		this._unsubscribe = null;
+	}
+
+	addNewUser(uid, name, email, username) {
+		var userRef = this._collectionRef.doc(uid);
+
+		return userRef.get().then((doc) => {
+			if (doc.exists) {
+				console.log("Already user. Document data: ", doc.data());
+				return false;
+			}
+			else{
+				console.log("no such document! Must create user");
+
+				return userRef.set({
+					[rhit.FB_KEY_NAME]: name,
+					[rhit.FB_KEY_EMAIL]: email,
+					[rhit.FB_KEY_USERNAME]: username,
+					[rhit.FB_KEY_ISADMIN]: false,
+					[rhit.FB_KEY_MAJOR]: "",
+					[rhit.FB_KEY_SUBTEAMS]: [],
+					[rhit.FB_KEY_YEAR]: 1,
+				}).then(() => {
+					console.log("user data successfully written!");
+					return true;
+				}).catch((error) => {
+					console.log("error setting user data", error);
+				});
+			}
+		}).catch((error) => {
+			console.log("error getting doc", error);
+		})
+	}
+
+	beginListening(uid, changeListener) {
+		const userRef = this._collectionRef.doc(uid);
+
+		this._unsubscribe = userRef.onSnapshot((doc) => {
+			if (doc.exists)
+			{
+				this._document = doc;
+				changeListener();
+			}
+			else
+			{
+				console.log("No user.");
+			}
+		});
+	}
+
+	stopListening() {
+		this._unsubscribe();
+	}
+
+	updateName(name) {
+		const userRef = this._collectionRef.doc(rhit.fbAuthManager.uid);
+		return userRef.update({
+			[rhit.FB_KEY_NAME]: name,
+		})
+		.then(() => {
+			console.log("Document successfully updated!");
+		})
+		.catch(function (error) {
+			console.error("Error updating document: ", error);
+		});
+	}
+
+	get name() {
+		return this._document.get(rhit.FB_KEY_NAME);
+	}
+
+	get username() {
+		return this._document.get(rhit.FB_KEY_USERNAME);
+	}
+
+	get email() {
+		return this._document.get(rhit.FB_KEY_EMAIL);
+	}
+
+	get major() {
+		return this._document.get(rhit.FB_KEY_MAJOR);
+	}
+
+	get year() {
+		return this._document.get(rhit.FB_KEY_YEAR);
+	}
+
+	get subteams() {
+		return this._document.get(rhit.FB_KEY_SUBTEAMS);
+	}
+
+	get isListening() {
+		return !!this._unsubscribe;
+	}
+}
+
+rhit.ProfilePageController = class {
+	constructor() {
+
+		rhit.fbUserManager.beginListening(rhit.fbAuthManager.uid, this.initializeInfo.bind(this));
+
+		this.chosenMajor = "None";
+		this.chosenYear = "1st";
+
+		const majorBtns = document.querySelectorAll(".majorItem");
+		for (let i = 0; i < majorBtns.length; i++)
+		{
+			majorBtns[i].onclick = (event) => {
+				this.chosenMajor = majorBtns[i].innerText;
+				document.querySelector("#majorText").innerText = "Chosen Major: " + this.chosenMajor;
+			}
+		}
+
+		const yearBtns = document.querySelectorAll(".yearItem");
+		for (let i = 0; i < yearBtns.length; i++)
+		{
+			yearBtns[i].onclick = (event) => {
+				this.chosenYear = yearBtns[i].innerText;
+				document.querySelector("#yearText").innerText = "Chosen Year: " + this.chosenYear;
+			}
+		}
+	}
+
+	initializeInfo() {
+		this.chosenMajor = rhit.fbUserManager.major;
+		this.chosenYear = rhit.fbUserManager.year;
+
+		document.querySelector("#changeName").value = rhit.fbUserManager.name;
+		document.querySelector("#changeUsername").value = rhit.fbUserManager.username;
+		document.querySelector("#majorText").innerText = "Chosen Major: " + this.chosenMajor;
+		document.querySelector("#yearText").innerText = "Chosen Year: " + rhit.fbUserManager.year;
+
+
+		const subteams = rhit.fbUserManager.subteams;
+		document.querySelector("#softwareCheck").checked = (subteams.includes("Software"));
+		document.querySelector("#hardwareCheck").checked = (subteams.includes("Hardware"));
+		document.querySelector("#mechanicalCheck").checked = (subteams.includes("Mechanical"));
+		document.querySelector("#outreachCheck").checked = (subteams.includes("Outreach"));
+	}
+}
+
+rhit.LoginPageController = class {
+	constructor() {
+
+		document.querySelector("#loginBtn").onclick = (event) => {
+			const loginEmailValue = document.querySelector("#loginEmail").value;
+			const loginPasswordValue = document.querySelector("#loginPassword").value;
+			rhit.fbAuthManager.signIn(loginEmailValue, loginPasswordValue);
+		};
+
+		document.querySelector("#registerBtn").onclick = (event) => {
+			const registerNameValue = document.querySelector("#registerName").value;
+			const registerEmailValue = document.querySelector("#registerEmail").value;
+			const registerUsernameValue = document.querySelector("#registerUsername").value;
+			const registerPasswordValue = document.querySelector("#registerPassword").value;
+			rhit.fbAuthManager.register(registerNameValue, registerEmailValue, registerUsernameValue, registerPasswordValue);
+		}
+	}
+}
 
 rhit.NotebookEntryController = class {
 	constructor() {
@@ -190,7 +436,7 @@ rhit.NotebookEntryController = class {
 
 	updateView() {
 		document.querySelector("#detailEntryTitle").innerText = rhit.fbSingleEntryManager.title;
-		document.querySelector("#detailEntryDate").innerText = rhit.formatDate(rhit.fbSingleEntryManager.date.toDate());
+		document.querySelector("#detailEntryDate").innerText = rhit.fbSingleEntryManager.date;
 		document.querySelector("#detailEntryTags").innerText = `Tags: ${rhit.fbSingleEntryManager.tags}`;
 		document.querySelector("#detailEntryContent").innerText = rhit.fbSingleEntryManager.content;
 	}
@@ -198,7 +444,7 @@ rhit.NotebookEntryController = class {
 
 rhit.EntryListController = class {
 	constructor() {
-		rhit.fbEntriesManager.beginListening(this.updateList.bind(this));
+		rhit.fbEntriesManager.beginListening(rhit.FB_KEY_DATE, "desc", this.updateList.bind(this));
 		
 		this.selectedRowEntry = null;
 
@@ -218,6 +464,26 @@ rhit.EntryListController = class {
 				rhit.fbSingleEntryManager.delete();
 			}
 		};
+
+		document.querySelector("#sortByName").onclick = (event) => {
+			rhit.fbEntriesManager.stopListening();
+			rhit.fbEntriesManager.beginListening(rhit.FB_KEY_TITLE, "asc", this.updateList.bind(this));
+		};
+
+		document.querySelector("#sortByDate").onclick = (event) => {
+			rhit.fbEntriesManager.stopListening();
+			rhit.fbEntriesManager.beginListening(rhit.FB_KEY_DATE, "desc", this.updateList.bind(this));
+		};
+
+		document.querySelector("#sortByTags").onclick = (event) => {
+			rhit.fbEntriesManager.stopListening();
+			rhit.fbEntriesManager.beginListening(rhit.FB_KEY_TAGS, "asc", this.updateList.bind(this));
+		};
+
+		document.querySelector("#searchBar").onchange = (event) => {
+			//typesense
+			console.log("User typed in search bar");
+		}
 
 	}
 
@@ -262,7 +528,7 @@ rhit.EntryListController = class {
 				${en[rhit.FB_KEY_TITLE]}
 			</div>
 			<div class="option-text">
-				${rhit.formatDate(en[rhit.FB_KEY_DATE].toDate())}
+				${en[rhit.FB_KEY_DATE]}
 			</div>
 			<div class="option-text">
 				${en[rhit.FB_KEY_TAGS]}
@@ -606,6 +872,14 @@ rhit.editEntryPageController = class {
 rhit.main = function () {
 	console.log("Ready");
 
+	rhit.fbAuthManager = new rhit.FbAuthManager();
+	rhit.fbAuthManager.beginListening(() => {
+		console.log("auth change callback");
+		console.log("isSignedIn = ", rhit.fbAuthManager.getIsSignedIn());
+	}).then(() => {
+		rhit.fbUserManager = new rhit.FbUserManager();
+	new rhit.NavbarController();
+
 	if (document.querySelector("#viewEntryPage"))
 	{
 		console.log("On view entry page");
@@ -636,6 +910,17 @@ rhit.main = function () {
 		rhit.fbEntriesManager = new rhit.FbEntriesManager();
 		new this.addEntryPageController();
 	}
+	if (document.querySelector("#loginPage"))
+	{
+		console.log("On login page");
+		new rhit.LoginPageController();
+	}
+	if (document.querySelector("#editProfilePage"))
+	{
+		console.log("On edit profile page");
+		new rhit.ProfilePageController();
+	}
+	});
 };
 
 rhit.main();

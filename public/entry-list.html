@@ -43,7 +43,7 @@
          </a>
        <ul class= "dropdown-menu dropdown-menu-right text-right">
          <li><a class="dropdown-item" href="edit-profile.html">Change Information</a></li>
-         <li><a class="dropdown-item" href="index.html">Logout</a></li>
+         <li><a id="logoutBtn" class="dropdown-item" href="index.html">Logout</a></li>
        </ul>
       </li>
     </ul>
@@ -64,14 +64,15 @@
                   Sort by
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                  <button class="dropdown-item" type="button">Name</button>
-                  <button class="dropdown-item" type="button">Date</button>
-                  <button class="dropdown-item" type="button">Tags</button>
+                  <button id="sortByName" class="dropdown-item" type="button">Name</button>
+                  <button id="sortByDate" class="dropdown-item" type="button">Date</button>
+                  <button id="sortByTags" class="dropdown-item" type="button">Tags</button>
                 </div>
               </div>
         </div>
         <div class="col" style="margin:auto">
-            <input style="width:100px;" class="form-control mr-sm-2">
+          <!--Label this-->
+            <input id="searchBar" style="width:100px;" class="form-control mr-sm-2">
         </div>
     </div>
 

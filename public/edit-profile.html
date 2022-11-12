@@ -43,7 +43,7 @@
          </a>
        <ul class= "dropdown-menu dropdown-menu-right text-right">
          <li><a class="dropdown-item" href="edit-profile.html">Change Information</a></li>
-         <li><a class="dropdown-item" href="index.html">Logout</a></li>
+         <li><a id="logoutBtn" class="dropdown-item" href="index.html">Logout</a></li>
        </ul>
       </li>
     </ul>
@@ -55,7 +55,7 @@
   </nav>
 
 
-  <div id="mainPage" class="container page-container">
+  <div id="editProfilePage" class="container page-container">
     <h3>Change Information</h3>
     <label for="changeName">Name</label>
     <input type="text" class="form-control" id="changeName">
@@ -69,15 +69,29 @@
                     Major
                     </button>
                     <div class="dropdown-menu" aria-labelledby="majorDropBtn">
-                    <button class="dropdown-item" type="button">Biology</button>
-                    <button class="dropdown-item" type="button">Biomathematics</button>
-                    <button class="dropdown-item" type="button">Chemical Engineering</button>
-                    <button class="dropdown-item" type="button">Chemistry</button>
+                    <button class="dropdown-item majorItem" type="button">Biochemistry</button>
+                    <button class="dropdown-item majorItem" type="button">Biology</button>
+                    <button class="dropdown-item majorItem" type="button">Biomathematics</button>
+                    <button class="dropdown-item majorItem" type="button">Biomedical Engineering</button>
+                    <button class="dropdown-item majorItem" type="button">Chemical Engineering</button>
+                    <button class="dropdown-item majorItem" type="button">Chemistry</button>
+                    <button class="dropdown-item majorItem" type="button">Civil Engineering</button>
+                    <button class="dropdown-item majorItem" type="button">Computer Engineering</button>
+                    <button class="dropdown-item majorItem" type="button">Computer Science</button>
+                    <button class="dropdown-item majorItem" type="button">Electrical Engineering</button>
+                    <button class="dropdown-item majorItem" type="button">Engineering Design</button>
+                    <button class="dropdown-item majorItem" type="button">Engineering Physics</button>
+                    <button class="dropdown-item majorItem" type="button">International Computer Science</button>
+                    <button class="dropdown-item majorItem" type="button">Mathematics</button>
+                    <button class="dropdown-item majorItem" type="button">Mechanical Engineering</button>
+                    <button class="dropdown-item majorItem" type="button">Optical Engineering</button>
+                    <button class="dropdown-item majorItem" type="button">Physics</button>
+                    <button class="dropdown-item majorItem" type="button">Software Engineering</button>
                     </div>
                 </div>
             </div>
             <div class="col">
-                <h5 id="majorText">Chosen Major: Biology</h5>
+                <h5 id="majorText">Chosen Major:</h5>
             </div>
         </div>
         <div class="col">
@@ -87,11 +101,11 @@
                     Year
                     </button>
                     <div class="dropdown-menu" aria-labelledby="yearDropBtn">
-                    <button class="dropdown-item" type="button">1st</button>
-                    <button class="dropdown-item" type="button">2nd</button>
-                    <button class="dropdown-item" type="button">3rd</button>
-                    <button class="dropdown-item" type="button">4th</button>
-                    <button class="dropdown-item" type="button">5th +</button>
+                    <button class="dropdown-item yearItem" type="button">1st</button>
+                    <button class="dropdown-item yearItem" type="button">2nd</button>
+                    <button class="dropdown-item yearItem" type="button">3rd</button>
+                    <button class="dropdown-item yearItem" type="button">4th</button>
+                    <button class="dropdown-item yearItem" type="button">5th +</button>
                     </div>
                 </div>
             </div>
@@ -144,6 +158,11 @@
   <script src="scripts/popper.js"></script>
   <script src="scripts/bootstrap-material-design.js"></script>
   <script>$("body").bootstrapMaterialDesign();</script>
+  <script src="/__/firebase/7.18.0/firebase-app.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
+  <script src="/__/firebase/init.js"></script>
   <script src="scripts/main.js"></script>
 </body>
 
