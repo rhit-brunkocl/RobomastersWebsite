@@ -471,6 +471,9 @@ rhit.FbSingleTagManager = class {
 rhit.editEntryPageController = class {
 	constructor(entryID){
 		//for edit
+
+		rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(entryID);
+		var selectedFile = rhit.fbSingleEntryManager.filename();
 		document.querySelector("#submitCreateTag").addEventListener("click", (event) => {
 			const name = document.querySelector("#inputTag").value;
 			rhit.fbTagsManager.add(name);
@@ -487,29 +490,49 @@ rhit.editEntryPageController = class {
 
 		const fileInput = document.getElementById('formFile');
 		fileInput.onchange = () => {
-  			const selectedFile = fileInput.files[0];
+  			selectedFile = fileInput.files[0];
   			console.log(selectedFile);
 		}
 
-		rhit.tagsForEntry = rhit.fbSingleEntryManager.tags();
+		rhit.tagsForEntry = [];
+
+		this.updateTags();
+
+		rhit.fbTagsManager = new rhit.FbTagsManager();
+		rhit.fbTagsManager.beginListening(this.loadTags.bind(this));
+		this.loadTags();
+		this.loadView();
 
 		document.querySelector("#submitButton").addEventListener("click", (event) => {
 			const title = document.querySelector("#entryName").value;
 			const content = document.querySelector("#entryContent").value;
 			const date = document.querySelector("#datePicker").value;
-			const tags = rhit.tagsForEntry;
-			const filename = document.querySelector("#formFile").value;
-			rhit.fbEntriesManager.update(title, content, date, tags, filename);
+			var tags = [];
+			for(var i = 0; i < rhit.tagsForEntry.length; i++){
+				tags.push(rhit.tagsForEntry[i].name);
+			}
+			var filename;
+			if(selectedFile == null){
+				filename = "";
+				rhit.fbSingleEntryManager.update(title, content, date, tags, filename);
+				window.location.href = "entry-list.html";
+			}else{
+				var storageRef = firebase.storage().ref();
+				var fileRef = storageRef.child(selectedFile.name);
+				const metadata = {
+					"content-type": selectedFile.type
+				};
+				fileRef.put(selectedFile, metadata).then((snapshot) => {
+					console.log('Uploaded a blob or file!');
+					fileRef.getDownloadURL().then((downloadURL) => {
+						console.log("File available at", downloadURL);
+						filename = downloadURL;
+						rhit.fbSingleEntryManager.update(title, content, date, tags, filename);
+						window.location.href = "entry-list.html";
+					});
+				});
+			}
 		});
-	}
-
-	updateTags(){
-		var tagString = "";
-		for(var i = 0; i < rhit.tagsForEntry.length -1; i++){
-			tagString += rhit.tagsForEntry[i].name + ", ";
-		}
-		tagString += rhit.tagsForEntry[rhit.tagsForEntry.length - 1].name;
-		document.querySelector("#tagLabel").innerHTML = tagString;
 	}
 
 	loadTags() {
@@ -521,6 +544,13 @@ rhit.editEntryPageController = class {
 			const tag = rhit.fbTagsManager.getTagAtIndex(i);
 			this.addTag(tag);
 		}
+	}
+
+	loadView(){
+		document.querySelector("#entryName").value = rhit.fbSingleEntryManager.title();
+		document.querySelector("#entryContent").value = rhit.fbSingleEntryManager.content();
+		document.querySelector("#datePicker").value = rhit.fbSingleEntryManager.date();
+		fileInput.files[0] = selectedFile;
 	}
 
 	_createDropdownItem(tag){
@@ -536,6 +566,9 @@ rhit.editEntryPageController = class {
 	addTag(tag){
 		const newMenuItem = this._createDropdownItem(tag);
 		$('#tagContainer').append(newMenuItem);
+		if(rhit.fbSingleEntryManager.tags().includes(tag)){
+			document.getElementById(`#${tag.name}`).checked = true;
+		}
 		$(`#${tag.name}`).on("click", (event) => {
 			if($(`#${tag.name}`).is(':checked')){
 				rhit.tagsForEntry.push(tag);
@@ -553,7 +586,20 @@ rhit.editEntryPageController = class {
 		});
 	}
 
+	
+	updateTags(){
+		var tagString = "";
+		if(rhit.tagsForEntry.length != 0){
+			for(var i = 0; i < rhit.tagsForEntry.length -1; i++){
+				tagString += rhit.tagsForEntry[i].name + ", ";
+			}
+			tagString += rhit.tagsForEntry[rhit.tagsForEntry.length - 1].name;
+		}
+		document.querySelector("#tagLabel").innerHTML = tagString;
+	}
+
 }
+
 
 /* Main */
 /** function and class syntax examples */
