@@ -145,13 +145,14 @@
     <br><br>
 
     <h3>Change Password</h3>
+    <span id="errorText" style="display:block;color:red"></span>
     <label for="changePasswordOld">Old Password</label>
     <input type="password" class="form-control" id="changePasswordOld">
     <label for="changePasswordNew">New Password</label>
     <input type="password" class="form-control" id="changePasswordNew">
     <label for="changePasswordConf">New Password Confirmation</label>
     <input type="password" class="form-control" id="changePasswordConf">
-    <button type="button" class="btn profile-btn">Confirm New Password</button>
+    <button id="confirmPassBtn" type="button" class="btn profile-btn">Confirm New Password</button>
   </div>
 
   <script src="scripts/jquery.min.js"></script>

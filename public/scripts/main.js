@@ -236,6 +236,19 @@ rhit.FbAuthManager = class {
 		});
 	}
 
+	updatePassword(newPass) {
+		return new Promise((resolve, reject) => {
+			firebase.auth().currentUser.updatePassword(newPass)
+			.then(() => {
+				console.log("password updated!");
+				resolve();
+			}).catch((error) => {
+				console.log(error);
+				reject();
+			})
+		});
+	}
+
 	register(name, email, username, password) {
 		firebase.auth().createUserWithEmailAndPassword(email, password)
 		.then((userCredential) => {
@@ -421,7 +434,29 @@ rhit.ProfilePageController = class {
 			rhit.fbUserManager.updateInfo(name, username, major, year, subteams).then(() => {
 				window.location.href = "/entry-list.html";
 			});
-		  };
+		};
+
+		document.querySelector("#confirmPassBtn").onclick = (event) => {
+			const useremail = rhit.fbUserManager.email;
+			const oldPassword = document.querySelector("#changePasswordOld").value;
+			const newPassword = document.querySelector("#changePasswordNew").value;
+			const confPassword = document.querySelector("#changePasswordConf").value;
+			if (newPassword != confPassword)
+			{
+				const errorText = document.querySelector("#errorText");
+				errorText.style.display = "block";
+				errorText.innerText = "Your new passwords did not match."
+				return;
+			}
+			rhit.fbAuthManager.signIn(useremail, oldPassword);
+			rhit.fbAuthManager.updatePassword(newPassword).then(() => {
+				window.location.href = "/entry-list.html";
+			}).catch(() => {
+				const errorText = document.querySelector("#errorText");
+				errorText.style.display = "block";
+				errorText.innerText = "Something went wrong."
+			});
+		}
 	}
 
 	subteamArray() {
