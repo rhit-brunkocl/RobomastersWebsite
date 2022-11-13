@@ -320,10 +320,14 @@ rhit.FbUserManager = class {
 		this._unsubscribe();
 	}
 
-	updateName(name) {
+	updateInfo(name, username, major, year, subteams) {
 		const userRef = this._collectionRef.doc(rhit.fbAuthManager.uid);
 		return userRef.update({
 			[rhit.FB_KEY_NAME]: name,
+			[rhit.FB_KEY_USERNAME]: username,
+			[rhit.FB_KEY_MAJOR]: major,
+			[rhit.FB_KEY_YEAR]: year,
+			[rhit.FB_KEY_SUBTEAMS]: subteams,
 		})
 		.then(() => {
 			console.log("Document successfully updated!");
@@ -387,6 +391,38 @@ rhit.ProfilePageController = class {
 				document.querySelector("#yearText").innerText = "Chosen Year: " + this.chosenYear;
 			}
 		}
+
+		document.querySelector("#submitInfo").onclick = (event) => {
+			const name = document.querySelector("#changeName").value;
+			const username = document.querySelector("#changeUsername").value;
+			const major = this.chosenMajor;
+			const year = this.chosenYear;
+			const subteams = this.subteamArray();
+			rhit.fbUserManager.updateInfo(name, username, major, year, subteams).then(() => {
+				window.location.href = "/entry-list.html";
+			});
+		  };
+	}
+
+	subteamArray() {
+		let arr = [];
+		if (document.querySelector("#softwareCheck").checked)
+		{
+			arr.push("Software");
+		}
+		if (document.querySelector("#hardwareCheck").checked)
+		{
+			arr.push("Hardware");
+		}
+		if (document.querySelector("#mechanicalCheck").checked)
+		{
+			arr.push("Mechanical");
+		}
+		if (document.querySelector("#outreachCheck").checked)
+		{
+			arr.push("Outreach");
+		}
+		return arr;
 	}
 
 	initializeInfo() {
