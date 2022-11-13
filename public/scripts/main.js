@@ -121,20 +121,36 @@ rhit.FbSingleEntryManager = class {
 	constructor(entryID) {
 		this._documentSnapshot = {};
 		this._unsubscribe = null;
-		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_ENTRIES).doc(entryID);
+		this._createRef(entryID).then(() => {console.log("ref?", this._ref);}).catch((error) => {console.log(error)});
+	}
+
+	_createRef(entryID) {
+		return new Promise((resolve, reject) => {
+			this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_ENTRIES).doc(entryID);
+			while (!this._ref)
+			{
+
+			}
+			resolve();
+		});
 	}
 
 	beginListening(changeListener) {
-		console.log("Listen for changes to this entry");
-		this._unsubscribe = this._ref.onSnapshot((doc) => {
-			console.log("Entry updated ", doc);
-			if (doc.exists) {
-				this._document = doc;
-				changeListener();
-			} else {
-				console.log("Document does not exist any longer.");
-				console.log("CONSIDER: automatically navigate back to the home page.");
-			}
+		return new Promise((resolve, reject) => {
+			console.log("Listen for changes to this entry");
+			this._unsubscribe = this._ref.onSnapshot((doc) => {
+				console.log("Entry updated ", doc);
+				if (doc.exists) {
+					this._document = doc;
+					changeListener();
+					resolve();
+				} else {
+					console.log("Document does not exist any longer.");
+					console.log("CONSIDER: automatically navigate back to the home page.");
+					reject();
+				}
+			});
+			
 		});
 	}
 
@@ -159,6 +175,10 @@ rhit.FbSingleEntryManager = class {
 
 	get filename(){
 		return this._document.get(rhit.FB_KEY_FILENAME);
+	}
+
+	docReal() {
+		return !!this._document;
 	}
 
 	update(title, content, date, tags, filename) {
@@ -776,67 +796,73 @@ rhit.FbSingleTagManager = class {
 rhit.editEntryPageController = class {
 	constructor(entryID){
 		//for edit
+		console.log("manager real?", rhit.fbSingleEntryManager);
+		rhit.fbSingleEntryManager.beginListening(this.updateView.bind(this)).then(() => {
+			var selectedFile = rhit.fbSingleEntryManager.filename;
+			document.querySelector("#submitCreateTag").addEventListener("click", (event) => {
+				const name = document.querySelector("#inputTag").value;
+				rhit.fbTagsManager.add(name);
+			});
 
-		rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(entryID);
-		var selectedFile = rhit.fbSingleEntryManager.filename();
-		document.querySelector("#submitCreateTag").addEventListener("click", (event) => {
-			const name = document.querySelector("#inputTag").value;
-			rhit.fbTagsManager.add(name);
-		});
+			$("#createTagDialog").on("show.bs.modal", (event) => {
+				// Pre animation
+				document.querySelector("#inputTag").value = "";
+			});
+			$("#createTagDialog").on("shown.bs.modal", (event) => {
+				// Post animation
+				document.querySelector("#inputTag").focus();
+			});
 
-		$("#createTagDialog").on("show.bs.modal", (event) => {
-			// Pre animation
-			document.querySelector("#inputTag").value = "";
-		});
-		$("#createTagDialog").on("shown.bs.modal", (event) => {
-			// Post animation
-			document.querySelector("#inputTag").focus();
-		});
-
-		const fileInput = document.getElementById('formFile');
-		fileInput.onchange = () => {
-  			selectedFile = fileInput.files[0];
-  			console.log(selectedFile);
-		}
-
-		rhit.tagsForEntry = [];
-
-		this.updateTags();
-
-		rhit.fbTagsManager = new rhit.FbTagsManager();
-		rhit.fbTagsManager.beginListening(this.loadTags.bind(this));
-		this.loadTags();
-		this.loadView();
-
-		document.querySelector("#submitButton").addEventListener("click", (event) => {
-			const title = document.querySelector("#entryName").value;
-			const content = document.querySelector("#entryContent").value;
-			const date = document.querySelector("#datePicker").value;
-			var tags = [];
-			for(var i = 0; i < rhit.tagsForEntry.length; i++){
-				tags.push(rhit.tagsForEntry[i].name);
+			this.fileInput = document.getElementById('formFile');
+			this.fileInput.onchange = () => {
+				this.selectedFile = this.fileInput.files[0];
+				console.log(this.selectedFile);
 			}
-			var filename;
-			if(selectedFile == null){
-				filename = "";
-				rhit.fbSingleEntryManager.update(title, content, date, tags, filename);
-				window.location.href = "entry-list.html";
-			}else{
-				var fileRef = rhit.storageRef.child(selectedFile.name);
-				const metadata = {
-					"content-type": selectedFile.type
-				};
-				fileRef.put(selectedFile, metadata).then((snapshot) => {
-					console.log('Uploaded a blob or file!');
-					fileRef.getDownloadURL().then((downloadURL) => {
-						console.log("File available at", downloadURL);
-						filename = downloadURL;
-						rhit.fbSingleEntryManager.update(title, content, date, tags, filename);
-						window.location.href = "entry-list.html";
+
+			rhit.tagsForEntry = [];
+
+			this.updateTags();
+
+			rhit.fbTagsManager = new rhit.FbTagsManager();
+			rhit.fbTagsManager.beginListening(this.loadTags.bind(this));
+			this.loadTags();
+			this.loadView();
+
+			document.querySelector("#submitButton").addEventListener("click", (event) => {
+				const title = document.querySelector("#entryName").value;
+				const content = document.querySelector("#entryContent").value;
+				const date = document.querySelector("#datePicker").value;
+				var tags = [];
+				for(var i = 0; i < rhit.tagsForEntry.length; i++){
+					tags.push(rhit.tagsForEntry[i].name);
+				}
+				var filename;
+				if(this.selectedFile == null){
+					filename = "";
+					rhit.fbSingleEntryManager.update(title, content, date, tags, filename);
+					window.location.href = "entry-list.html";
+				}else{
+					var fileRef = rhit.storageRef.child(this.selectedFile.name);
+					const metadata = {
+						"content-type": this.selectedFile.type
+					};
+					fileRef.put(this.selectedFile, metadata).then((snapshot) => {
+						console.log('Uploaded a blob or file!');
+						fileRef.getDownloadURL().then((downloadURL) => {
+							console.log("File available at", downloadURL);
+							filename = downloadURL;
+							rhit.fbSingleEntryManager.update(title, content, date, tags, filename);
+							window.location.href = "entry-list.html";
+						});
 					});
-				});
-			}
+				}
+			});
 		});
+		
+	}
+
+	updateView() {
+
 	}
 
 	loadTags() {
@@ -851,10 +877,11 @@ rhit.editEntryPageController = class {
 	}
 
 	loadView(){
-		document.querySelector("#entryName").value = rhit.fbSingleEntryManager.title();
-		document.querySelector("#entryContent").value = rhit.fbSingleEntryManager.content();
-		document.querySelector("#datePicker").value = rhit.fbSingleEntryManager.date();
-		fileInput.files[0] = selectedFile;
+		document.querySelector("#entryName").value = rhit.fbSingleEntryManager.title;
+		document.querySelector("#entryContent").value = rhit.fbSingleEntryManager.content;
+		document.querySelector("#datePicker").value = rhit.fbSingleEntryManager.date;
+		this.fileInput.files = this.selectedFile;
+		console.log(this.selectedFile);
 	}
 
 	_createDropdownItem(tag){
@@ -870,7 +897,7 @@ rhit.editEntryPageController = class {
 	addTag(tag){
 		const newMenuItem = this._createDropdownItem(tag);
 		$('#tagContainer').append(newMenuItem);
-		if(rhit.fbSingleEntryManager.tags().includes(tag)){
+		if(rhit.fbSingleEntryManager.tags.includes(tag)){
 			document.getElementById(`#${tag.name}`).checked = true;
 		}
 		$(`#${tag.name}`).on("click", (event) => {
@@ -918,13 +945,13 @@ rhit.main = function () {
 		rhit.fbUserManager = new rhit.FbUserManager();
 	new rhit.NavbarController();
 
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const entryId = urlParams.get("id");
+
 	if (document.querySelector("#viewEntryPage"))
 	{
 		console.log("On view entry page");
-
-		const queryString = window.location.search;
-		const urlParams = new URLSearchParams(queryString);
-		const entryId = urlParams.get("id");
 
 		console.log(`viewing entry ${entryId}`);
 
@@ -946,7 +973,16 @@ rhit.main = function () {
 	{
 		console.log("On add entry page");
 		rhit.fbEntriesManager = new rhit.FbEntriesManager();
-		new this.addEntryPageController();
+
+		if (entryId)
+		{
+			rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(entryId);
+			new this.editEntryPageController(entryId);
+		}
+		else
+		{
+			new this.addEntryPageController();
+		}
 	}
 	if (document.querySelector("#loginPage"))
 	{
