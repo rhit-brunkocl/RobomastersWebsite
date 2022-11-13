@@ -250,30 +250,38 @@ rhit.FbAuthManager = class {
 	}
 
 	register(name, email, username, password) {
-		firebase.auth().createUserWithEmailAndPassword(email, password)
-		.then((userCredential) => {
-			console.log("created user");
-			var user = userCredential.user;
-			console.log(user);
-			rhit.fbUserManager.addNewUser(user.uid, name, email, username);
-		})
-		.catch((error) => {
-			var errorCode = error.code;
-			var errorMessage = error.message;
-			console.log(errorCode, errorMessage);
+		return new Promise((resolve, reject) => {
+			firebase.auth().createUserWithEmailAndPassword(email, password)
+			.then((userCredential) => {
+				console.log("created user");
+				var user = userCredential.user;
+				console.log(user);
+				rhit.fbUserManager.addNewUser(user.uid, name, email, username);
+				resolve();
+			})
+			.catch((error) => {
+				var errorCode = error.code;
+				var errorMessage = error.message;
+				console.log(errorCode, errorMessage);
+				reject();
+			});
 		});
 	}
 
 	signIn(email, password) {
-		firebase.auth().signInWithEmailAndPassword(email, password)
-		.then((userCredential) => {
-			console.log("signed in");
-		})
-		.catch((error) => {
-			var errorCode = error.code;
-			var errorMessage = error.message;
-			console.log(errorCode, errorMessage);
-  });
+		return new Promise((resolve, reject) => {
+			firebase.auth().signInWithEmailAndPassword(email, password)
+			.then((userCredential) => {
+				console.log("signed in");
+				resolve();
+			})
+			.catch((error) => {
+				var errorCode = error.code;
+				var errorMessage = error.message;
+				console.log(errorCode, errorMessage);
+				reject();
+			});
+		});
 	}
 
 	signOut() {
@@ -504,7 +512,11 @@ rhit.LoginPageController = class {
 		document.querySelector("#loginBtn").onclick = (event) => {
 			const loginEmailValue = document.querySelector("#loginEmail").value;
 			const loginPasswordValue = document.querySelector("#loginPassword").value;
-			rhit.fbAuthManager.signIn(loginEmailValue, loginPasswordValue);
+			rhit.fbAuthManager.signIn(loginEmailValue, loginPasswordValue).then(() => {
+				window.location.href = "dashboard.html";
+			}).catch((error) => {
+				console.log(error);
+			});
 		};
 
 		document.querySelector("#registerBtn").onclick = (event) => {
@@ -512,7 +524,11 @@ rhit.LoginPageController = class {
 			const registerEmailValue = document.querySelector("#registerEmail").value;
 			const registerUsernameValue = document.querySelector("#registerUsername").value;
 			const registerPasswordValue = document.querySelector("#registerPassword").value;
-			rhit.fbAuthManager.register(registerNameValue, registerEmailValue, registerUsernameValue, registerPasswordValue);
+			rhit.fbAuthManager.register(registerNameValue, registerEmailValue, registerUsernameValue, registerPasswordValue).then(() => {
+				window.location.href = "dashboard.html";
+			}).catch((error) => {
+				console.log(error);
+			});;
 		}
 	}
 }
