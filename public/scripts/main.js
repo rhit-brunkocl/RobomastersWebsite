@@ -23,6 +23,7 @@ rhit.FbSingleTagManager = null;
 rhit.fbAuthManager = null;
 rhit.fbUserManager = null;
 rhit.tagsForEntry = [];
+rhit.storageRef = firebase.storage().ref();
 
 rhit.formatDate = function(d) {
 	const month = d.getMonth() + 1;
@@ -100,6 +101,7 @@ rhit.FbEntriesManager = class {
 			})
 			.then(function (docRef) {
 				console.log("Document added with ID: ", docRef.id);
+				window.location.href = "entry-list.html";
 			})
 			.catch(function (error) {
 				console.error("Error adding document: ", error);
@@ -439,6 +441,9 @@ rhit.NotebookEntryController = class {
 		document.querySelector("#detailEntryDate").innerText = rhit.fbSingleEntryManager.date;
 		document.querySelector("#detailEntryTags").innerText = `Tags: ${rhit.fbSingleEntryManager.tags}`;
 		document.querySelector("#detailEntryContent").innerText = rhit.fbSingleEntryManager.content;
+		if(rhit.fbSingleEntryManager.filename != ""){
+			document.getElementById("filePreview").src = rhit.fbSingleEntryManager.filename;
+		}
 	}
 }
 
@@ -584,18 +589,16 @@ rhit.addEntryPageController = class {
 				rhit.fbEntriesManager.add(title, content, date, tags, filename);
 				window.location.href = "entry-list.html";
 			}else{
-				var storageRef = firebase.storage().ref();
-				var fileRef = storageRef.child(selectedFile.name);
+				var fileRef = rhit.storageRef.child(selectedFile.name);
 				const metadata = {
 					"content-type": selectedFile.type
 				};
 				fileRef.put(selectedFile, metadata).then((snapshot) => {
 					console.log('Uploaded a blob or file!');
-					fileRef.getDownloadURL().then((downloadURL) => {
+					fileRef.getDownloadURL().then(async (downloadURL) => {
 						console.log("File available at", downloadURL);
 						filename = downloadURL;
-						rhit.fbEntriesManager.add(title, content, date, tags, filename);
-						window.location.href = "entry-list.html";
+						await rhit.fbEntriesManager.add(title, content, date, tags, filename);
 					});
 				});
 			}
@@ -783,8 +786,7 @@ rhit.editEntryPageController = class {
 				rhit.fbSingleEntryManager.update(title, content, date, tags, filename);
 				window.location.href = "entry-list.html";
 			}else{
-				var storageRef = firebase.storage().ref();
-				var fileRef = storageRef.child(selectedFile.name);
+				var fileRef = rhit.storageRef.child(selectedFile.name);
 				const metadata = {
 					"content-type": selectedFile.type
 				};
