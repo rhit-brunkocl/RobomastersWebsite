@@ -328,7 +328,7 @@ rhit.FbUserManager = class {
 					[rhit.FB_KEY_ISADMIN]: false,
 					[rhit.FB_KEY_MAJOR]: "",
 					[rhit.FB_KEY_SUBTEAMS]: [],
-					[rhit.FB_KEY_YEAR]: 1,
+					[rhit.FB_KEY_YEAR]: "1st",
 				}).then(() => {
 					console.log("user data successfully written!");
 					return true;
@@ -404,6 +404,10 @@ rhit.FbUserManager = class {
 
 	get isListening() {
 		return !!this._unsubscribe;
+	}
+
+	get isAdmin() {
+		return this._document.get(rhit.FB_KEY_ISADMIN);
 	}
 }
 
@@ -557,24 +561,12 @@ rhit.NotebookEntryController = class {
 rhit.EntryListController = class {
 	constructor() {
 		rhit.fbEntriesManager.beginListening(rhit.FB_KEY_DATE, "desc", this.updateList.bind(this));
+		rhit.fbUserManager.beginListening(rhit.fbAuthManager.uid, this.initializeButtons.bind(this));
 		
 		this.selectedRowEntry = null;
-
+		
 		document.querySelector("#addEntry").onclick = (event) => {
 			window.location.href = "/edit-add-entry.html";
-		};
-
-		document.querySelector("#editEntry").onclick = (event) => {
-			if (this.selectedRowEntry) {
-				window.location.href = `/edit-add-entry.html?id=${this.selectedRowEntry.id}`;
-			}
-		};
-
-		document.querySelector("#deleteEntry").onclick = (event) => {
-			if (this.selectedRowEntry) {
-				rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(this.selectedRowEntry.id);
-				rhit.fbSingleEntryManager.delete();
-			}
 		};
 
 		document.querySelector("#sortByName").onclick = (event) => {
@@ -597,6 +589,32 @@ rhit.EntryListController = class {
 			console.log("User typed in search bar");
 		}
 
+	}
+
+	initializeButtons() {
+		if (rhit.fbUserManager.isAdmin)
+		{
+			document.querySelector("#editEntry").style.display = "inline";
+			document.querySelector("#deleteEntry").style.display = "inline";
+
+			
+		document.querySelector("#editEntry").onclick = (event) => {
+			if (this.selectedRowEntry && rhit.fbUserManager.isAdmin) {
+				window.location.href = `/edit-add-entry.html?id=${this.selectedRowEntry.id}`;
+			}
+		};
+
+		document.querySelector("#deleteEntry").onclick = (event) => {
+			if (this.selectedRowEntry && rhit.fbUserManager.isAdmin) {
+				rhit.fbSingleEntryManager = new rhit.FbSingleEntryManager(this.selectedRowEntry.id);
+				rhit.fbSingleEntryManager.delete();
+			}
+		};
+		}
+	}
+
+	showButtons() {
+		
 	}
 
 	updateList() {
